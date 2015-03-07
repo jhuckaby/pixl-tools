@@ -1,0 +1,27 @@
+{
+	"name": "pixl-tools",
+	"version": "1.0.0",
+	"description": "A set of miscellaneous utility functions for Node.JS.",
+	"author": "Joseph Huckaby <jhuckaby@gmail.com>",
+	"homepage": "https://github.com/jhuckaby/pixl-tools",
+	"license": "MIT",
+	"main": "tools.js",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/jhuckaby/pixl-tools"
+	},
+	"bugs": {
+		"url": "https://github.com/jhuckaby/pixl-tools/issues"
+	},
+	"keywords": [
+		"utilities",
+		"miscellaneous",
+		"misc"
+	],
+	"dependencies": {
+
+	},
+	"devDepenendcies": {
+		
+	}
+}
