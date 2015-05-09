@@ -399,16 +399,17 @@ You can omit the leading slashes if you are doing single-level hash lookups.
 	OBJECT getDateArgs( MIXED )
 ```
 
-This function parses any date string, Epoch timestamp or Date object, and produces a hash with the following keys:
+This function parses any date string, Epoch timestamp or Date object, and produces a hash with the following keys (all localized to the current timezone):
 
 | Key | Sample Value | Description |
 | --- | ------------ | ----------- |
 | `year` | 2015 | Full year as integer. | 
 | `mon` | 3 | Month of year as integer (1 - 12). | 
 | `mday` | 6 | Day of month as integer (1 - 31). | 
+| `wday` | 4 | Day of week as integer (0 - 6). | 
 | `hour` | 9 | Hour of day as integer (0 - 23). | 
 | `min` | 2 | Minute of hour as integer (0 - 59). | 
-| `sec` | 1 | Second of minute as integer (0 - 59). | 
+| `sec` | 10 | Second of minute as integer (0 - 59). | 
 | `msec` | 999 | Millisecond of second as integer (0 - 999). | 
 | `yyyy` | "2015" | 4-digit year as string. | 
 | `mm` | "03" | 2-digit month as string with padded zeros if needed. | 
@@ -418,6 +419,9 @@ This function parses any date string, Epoch timestamp or Date object, and produc
 | `ss` | "10" | 2-digit second as string with padded zeros if needed. | 
 | `hour12` | 9 | Hour expressed in 12-hour time (i.e. 1 PM = 1.) | 
 | `ampm` | "am" | String representing ante meridiem (`am`) or post meridiem (`pm`). | 
+| `yyyy_mm_dd` | "2015/03/06" | Formatted string representing date in `YYYY/MM/DD` format. |
+| `hh_mi_ss` | "09:02:10" | Formatted string representing local time in `HH:MI:SS` format. |
+| `epoch` | 1425661330 | Epoch seconds used to generate all the date args. |
 
 Example usage:
 

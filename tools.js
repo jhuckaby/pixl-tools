@@ -258,9 +258,11 @@ module.exports = {
 		// given epoch seconds, date object or date string
 		var date = (typeof(thingy) == 'object') ? thingy : (new Date( (typeof(thingy) == 'number') ? (thingy * 1000) : thingy ));
 		var args = {
+			epoch: Math.floor( date.getTime() / 1000 ),
 			year: date.getFullYear(),
 			mon: date.getMonth() + 1,
 			mday: date.getDate(),
+			wday: date.getDay(),
 			hour: date.getHours(),
 			min: date.getMinutes(),
 			sec: date.getSeconds(),
@@ -284,6 +286,10 @@ module.exports = {
 			args.hour12 = args.hour;
 			if (!args.hour12) args.hour12 = 12;
 		}
+		
+		args.yyyy_mm_dd = args.yyyy + '/' + args.mm + '/' + args.dd;
+		args.hh_mi_ss = args.hh + ':' + args.mi + ':' + args.ss;
+		
 		return args;
 	},
 	
