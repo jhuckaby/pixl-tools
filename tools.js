@@ -459,6 +459,11 @@ module.exports = {
 			return word.replace(/y$/, 'ie') + 's';
 		}
 		else return word;
+	},
+	
+	escapeRegExp: function(text) {
+		// escape text for regular expression
+		return text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 	}
 	
 };

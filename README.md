@@ -596,6 +596,14 @@ This function pluralizes a string using US-English rules, given an arbitrary num
 	// --> "You have 3 items in your list.";
 ```
 
+## escapeRegExp
+
+```
+	STRING escapeRegExp( STRING )
+```
+
+This function escapes a string so that it can be used inside a regular expression.  Meaning, any regular expression metacharacters are prefixed with a backslash, so they are interpreted literally.  It was taken from the [MDN Regular Expression Guide](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Regular_Expressions).
+
 # License
 
 Copyright (c) 2015 Joseph Huckaby.
