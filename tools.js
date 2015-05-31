@@ -293,6 +293,34 @@ module.exports = {
 		return args;
 	},
 	
+	getTimeFromArgs: function(args) {
+		// return epoch given args like those returned from getDateArgs()
+		var then = new Date(
+			args.year,
+			args.mon - 1,
+			args.mday,
+			args.hour,
+			args.min,
+			args.sec,
+			0
+		);
+		return Math.floor( then.getTime() / 1000 );
+	},
+	
+	normalizeTime: function(epoch, zero_args) {
+		// quantize time into any given precision
+		// examples: 
+		//   hour: { min:0, sec:0 }
+		//   day: { hour:0, min:0, sec:0 }
+		var args = this.getDateArgs(epoch);
+		for (key in zero_args) args[key] = zero_args[key];
+		
+		// mday is 1-based
+		if (!args['mday']) args['mday'] = 1;
+		
+		return this.getTimeFromArgs(args);
+	},
+	
 	getTextFromBytes: function(bytes, precision) {
 		// convert raw bytes to english-readable format
 		// set precision to 1 for ints, 10 for 1 decimal point (default), 100 for 2, etc.

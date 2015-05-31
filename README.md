@@ -24,7 +24,46 @@ Then call the function of your choice:
 
 # Function List
 
-Here are all the functions included in the tools library.
+Here are all the functions included in the tools library, with links to full descriptions and examples:
+
+| Function Name | Description |
+|---------------|-------------|
+| [timeNow()](#timenow) | Return the current time as Epoch seconds. |
+| [generateUniqueID()](#generateuniqueid) | Generate a unique hexadecimal ID. |
+| [digestHex()](#digesthex) | Digest a string using SHA-256, return hexadecimal hash. |
+| [numKeys()](#numkeys) | Returns the number of keys in an object. |
+| [firstKey()](#firstkey) | Returns the "first" key in an object (undefined order). |
+| [hashKeysToArray()](#hashkeystoarray) | Creates an array out of all object keys (undefined order). |
+| [isaHash()](#isahash) | Determines if a variable is a hash (object) or not. |
+| [isaArray()](#isaarray) | Determines if a variable is an array or not. |
+| [copyHash()](#copyhash) | Makes a shallow or deep copy of an object. |
+| [copyHashRemoveKeys()](#copyhashremovekeys) | Shallow copy an object, but omit selected keys. |
+| [mergeHashes()](#mergehashes) | Non-destructive shallow merge of two objects, return the combined one. |
+| [parseQueryString()](#parsequerystring) | Parse a URL query string into key/value pairs. |
+| [composeQueryString()](#composequerystring) | Compose a URL query string given an object of key/value pairs. |
+| [findObjectsIdx()](#findobjectsidx) | Locate object indexes in an array matching a set of criteria. |
+| [findObjectIdx()](#findobjectidx) | Locate first object index in an array matching a set of criteria. |
+| [findObject()](#findobject) | Locate and return first object in an array matching a set of criteria. |
+| [findObjects()](#findobjects) | Locate and return all objects in an array matching a set of criteria. |
+| [deleteObject()](#deleteobject) | Find and delete an object in an array matching a set of criteria. |
+| [deleteObjects()](#deleteobjects) | Find and delete all objects in an array matching a set of criteria. |
+| [alwaysArray()](#alwaysarray) | Wrap variable in array, unless it is already an array. |
+| [lookupPath()](#lookuppath) | Perform a `/filesystem/path/style` lookup in an object tree. |
+| [substitute()](#substitute) | Perform placeholder substitution in a string using square brackets. |
+| [getDateArgs()](#getdateargs) | Parse a date into year, month, day, hour, min, sec, and more. |
+| [getTimeFromArgs()](#gettimefromargs) | Recalculate Epoch seconds given object from [getDateArgs()](#getdateargs). |
+| [normalizeTime()](#normalizetime) | Normalize (floor) Epoch seconds into nearest minute, hour, day, etc. |
+| [getTextFromBytes()](#gettextfrombytes) | Convert a byte count into a human readable string, e.g. `5 MB`. |
+| [getBytesFromText()](#getbytesfromtext) | Convert a human-readable size (e.g. `5 MB`) into a raw byte count. |
+| [commify()](#commify) | Apply commas to a positive integer using US-style formatting, e.g. `1,000,000`. |
+| [shortFloat()](#shortfloat) | Trim floating point decimal to 2-digit precision, unless digits are zeros. |
+| [pct()](#pct) | Return percentage string given arbitrary value and a maximum limit, e.g. '55%'. |
+| [getTextFromSeconds()](#gettextfromseconds) | Convert a number of seconds into a human-readable string, e.g. `3 hours`. |
+| [getSecondsFromText()](#getsecondsfromtext) | Convert a human-readable time delta, e.g. `3 hours` into total seconds. |
+| [getNiceRemainingTime()](#getniceremainingtime) | Calculate estimated remaining time, given progress and start time. |
+| [randArray()](#randarray) | Return a random element from an array. |
+| [pluralize()](#pluralize) | Apply English language pluralization to a word, based on a specified value. |
+| [escapeRegExp()](#escaperegexp) | Escape a string for inclusion in a regular expression. |
 
 ## timeNow
 
@@ -428,6 +467,41 @@ Example usage:
 ```javascript
 	var args = Tools.getDateArgs( new Date() );
 	var date_str = args.yyyy + '/' + args.mm + '/' + args.dd;
+```
+
+## getTimeFromArgs
+
+```
+	INTEGER getTimeFromArgs( OBJECT )
+```
+
+This function will recalculate a date given an `args` object as returned from [getDateArgs()](#getdateargs).  It allows you to manipulate the `year`, `mon`, `mday`, `hour`, `min` and/or `sec` properties, and will return the computed Epoch seconds from the new set of values.  Example:
+
+```javascript
+	var args = Tools.getDateArgs( new Date() );
+	args.mday = 15;
+	
+	var epoch = Tools.getTimeFromArgs(args);
+```
+
+This example would return the Epoch seconds from the 15th day of the current month, in the current year, and using the current time of day.
+
+## normalizeTime
+
+```
+	INTEGER normalizeTime( INTEGER, OBJECT )
+```
+
+This function will "normalize" (i.e. quantize) an Epoch value to the nearest minute, hour, day, month, or year.  Meaning, you can pass in an Epoch time value, and have it return a value of the start of the current hour, midnight on the current day, the 1st of the month, etc.  To do this, pass in an object containing any keys you wish to change, e.g. `year`, `mon`, `mday`, `hour`, `min` and/or `sec`.  Example:
+
+```javascript
+	var midnight = Tools.normalizeTime( Tools.timeNow(), { hour: 0, min: 0, sec: 0 } );
+```
+
+You can actually set the values to non-zero.  For example, to return the Epoch time of exactly noon today:
+
+```javascript
+	var noon = Tools.normalizeTime( Tools.timeNow(), { hour: 12, min: 0, sec: 0 } );
 ```
 
 ## getTextFromBytes
