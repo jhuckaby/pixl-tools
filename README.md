@@ -34,11 +34,13 @@ Here are all the functions included in the tools library, with links to full des
 | [numKeys()](#numkeys) | Returns the number of keys in an object. |
 | [firstKey()](#firstkey) | Returns the "first" key in an object (undefined order). |
 | [hashKeysToArray()](#hashkeystoarray) | Creates an array out of all object keys (undefined order). |
+| [hashValuesToArray()](#hashvaluestoarray) | Creates an array out of all object values (undefined order). |
 | [isaHash()](#isahash) | Determines if a variable is a hash (object) or not. |
 | [isaArray()](#isaarray) | Determines if a variable is an array or not. |
 | [copyHash()](#copyhash) | Makes a shallow or deep copy of an object. |
 | [copyHashRemoveKeys()](#copyhashremovekeys) | Shallow copy an object, but omit selected keys. |
 | [mergeHashes()](#mergehashes) | Non-destructive shallow merge of two objects, return the combined one. |
+| [mergeHashInto()](#mergehashinto) | Merge one hash into another (destructive). |
 | [parseQueryString()](#parsequerystring) | Parse a URL query string into key/value pairs. |
 | [composeQueryString()](#composequerystring) | Compose a URL query string given an object of key/value pairs. |
 | [findObjectsIdx()](#findobjectsidx) | Locate object indexes in an array matching a set of criteria. |
@@ -139,7 +141,7 @@ This function returns the first key of the hash when iterating over it.  Note th
 	ARRAY hashKeysToArray( OBJECT )
 ```
 
-This function returns all the hash keys as an array.  Useful for sorting and then iterating over the sorted list.
+This function returns all the hash keys as an array.  The values are discarded.  Useful for sorting and then iterating over the sorted list.
 
 ```javascript
 	var my_hash = { foo: "bar", baz: 12345 };
@@ -148,6 +150,24 @@ This function returns all the hash keys as an array.  Useful for sorting and the
 	for (var idx = 0, len = keys.length; idx < len; idx++) {
 		var key = keys[idx];
 		// do something with key and my_hash[key]
+	}
+```
+
+## hashValuesToArray
+
+```
+	ARRAY hashValuesToArray( OBJECT )
+```
+
+This function returns all the hash values as an array.  The keys are discarded.
+
+```javascript
+	var my_hash = { foo: "bar", baz: 12345 };
+	var values = Tools.hashValuesToArray( my_hash );
+	
+	for (var idx = 0, len = values.length; idx < len; idx++) {
+		var value = values[idx];
+		// do something with value
 	}
 ```
 
@@ -218,6 +238,20 @@ This function merges two hashes (objects) together, and returns a new hash which
 	var combo = Tools.mergeHashes( hash1, hash2 );
 ```
 
+## mergeHashInto
+
+```
+	VOID mergeHashInto( OBJECT_A, OBJECT_B )
+```
+
+This function shallow-merges {OBJECT_B} into {OBJECT_A}.  There is no return value.  Existing keys are replaced in {OBJECT_A}.
+
+```javascript
+	var hash1 = { foo: "bar" };
+	var hash2 = { baz: 12345 };
+	Tools.mergeHashInto( hash1, hash2 );
+```
+
 ## parseQueryString
 
 ```
@@ -233,7 +267,7 @@ This function parses a standard URL query string, and returns a hash with key/va
 	var baz = query.baz; // "12345"
 ```
 
-Please note that this is a very simple function, and you should probably use the built-in Node.JS [querystring](http://nodejs.org/api/querystring.html) module instead.
+Please note that this is a very simple function, and you should probably use the built-in Node.js [querystring](http://nodejs.org/api/querystring.html) module instead.
 
 ## composeQueryString
 
@@ -249,7 +283,7 @@ This function takes a hash of key/value pairs, and constructs a URL query string
 	// --> "?foo=bar&baz=12345"
 ```
 
-Please note that this is a very simple function, and you should probably use the built-in Node.JS [querystring](http://nodejs.org/api/querystring.html) module instead.
+Please note that this is a very simple function, and you should probably use the built-in Node.js [querystring](http://nodejs.org/api/querystring.html) module instead.
 
 ## findObjectsIdx
 

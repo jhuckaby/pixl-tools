@@ -1,4 +1,4 @@
-// Misc Tools for Node.JS
+// Misc Tools for Node.js
 // Copyright (c) 2015 Joseph Huckaby
 // Released under the MIT License
 
@@ -57,8 +57,15 @@ module.exports = {
 		return arr;
 	},
 	
+	hashValuesToArray: function(hash) {
+		// convert hash values to array (discard keys)
+		var arr = [];
+		for (var key in hash) arr.push( hash[key] );
+		return arr;
+	},
+	
 	isaHash: function(arg) {
-		// determine if arg is a hash
+		// determine if arg is a hash or hash-like
 		return( !!arg && (typeof(arg) == 'object') && (typeof(arg.length) == 'undefined') );
 	},
 	
@@ -106,13 +113,20 @@ module.exports = {
 		return c;
 	},
 	
+	mergeHashInto: function(a, b) {
+		// shallow-merge keys from b into a
+		for (var key in b) a[key] = b[key];
+	},
+	
 	parseQueryString: function(url) {
 		// parse query string into key/value pairs and return as object
 		var query = {}; 
 		url.replace(/^.*\?/, '').replace(/([^\=]+)\=([^\&]*)\&?/g, function(match, key, value) {
 			query[key] = decodeURIComponent(value);
+			if (query[key].match(/^\-?\d+$/)) query[key] = parseInt(query[key]);
+			else if (query[key].match(/^\-?\d*\.\d+$/)) query[key] = parseFloat(query[key]);
 			return ''; 
-		} ); 
+		} );
 		return query; 
 	},
 	
