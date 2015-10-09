@@ -2,7 +2,8 @@
 // Copyright (c) 2015 Joseph Huckaby
 // Released under the MIT License
 
-var Crypto = require('crypto');
+var crypto = require('crypto');
+var ErrNo = require('errno');
 
 module.exports = {
 	
@@ -16,7 +17,7 @@ module.exports = {
 	generateUniqueID: function(len, salt) {
 		// generate unique ID using some readily-available bits of entropy
 		this._uniqueIDCounter++;
-		var shasum = Crypto.createHash('sha256');
+		var shasum = crypto.createHash('sha256');
 		
 		shasum.update([
 			'SALT_7fb1b7485647b1782c715474fba28fd1',
@@ -32,7 +33,7 @@ module.exports = {
 	
 	digestHex: function(str) {
 		// digest string using SHA256, return hex hash
-		var shasum = Crypto.createHash('sha256');
+		var shasum = crypto.createHash('sha256');
 		shasum.update( str );
 		return shasum.digest('hex');
 	},
@@ -280,7 +281,8 @@ module.exports = {
 			hour: date.getHours(),
 			min: date.getMinutes(),
 			sec: date.getSeconds(),
-			msec: date.getMilliseconds()
+			msec: date.getMilliseconds(),
+			offset: 0 - (date.getTimezoneOffset() / 60)
 		};
 		
 		args.yyyy = '' + args.year;
@@ -303,6 +305,7 @@ module.exports = {
 		
 		args.yyyy_mm_dd = args.yyyy + '/' + args.mm + '/' + args.dd;
 		args.hh_mi_ss = args.hh + ':' + args.mi + ':' + args.ss;
+		args.tz = 'GMT' + (args.offset > 0 ? '+' : '') + args.offset;
 		
 		return args;
 	},
@@ -411,6 +414,11 @@ module.exports = {
 		return '' + (floor ? Math.floor(pct) : this.shortFloat(pct)) + '%';
 	},
 	
+	zeroPad: function(value, len) {
+		// Pad a number with zeroes to achieve a desired total length (max 10)
+		return ('0000000000' + value).slice(0 - len);
+	},
+	
 	getTextFromSeconds: function(sec, abbrev, no_secondary) {
 		// convert raw seconds to human-readable relative time
 		var neg = '';
@@ -506,6 +514,25 @@ module.exports = {
 	escapeRegExp: function(text) {
 		// escape text for regular expression
 		return text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+	},
+	
+	ucfirst: function(text) {
+		// capitalize first character only, lower-case rest
+		return text.substring(0, 1).toUpperCase() + text.substring(1, text.length).toLowerCase();
+	},
+	
+	getErrorDescription: function(err) {
+		// attempt to get better error description using 'errno' module
+		var msg = err.message;
+		
+		if (err.errno && ErrNo.code[err.errno]) {
+			msg = this.ucfirst(ErrNo.code[err.errno].description) + " (" + err.message + ")";
+		}
+		else if (err.code && ErrNo.code[err.code]) {
+			msg = this.ucfirst(ErrNo.code[err.code].description) + " (" + err.message + ")";
+		}
+		
+		return msg;
 	}
 	
 };

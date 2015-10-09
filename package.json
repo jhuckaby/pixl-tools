@@ -19,7 +19,7 @@
 		"misc"
 	],
 	"dependencies": {
-
+		"errno": "*"
 	},
 	"devDependencies": {
 		

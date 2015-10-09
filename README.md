@@ -36,7 +36,7 @@ Here are all the functions included in the tools library, with links to full des
 | [hashKeysToArray()](#hashkeystoarray) | Creates an array out of all object keys (undefined order). |
 | [hashValuesToArray()](#hashvaluestoarray) | Creates an array out of all object values (undefined order). |
 | [isaHash()](#isahash) | Determines if a variable is a hash (object) or not. |
-| [isaArray()](#isaarray) | Determines if a variable is an array or not. |
+| [isaArray()](#isaarray) | Determines if a variable is an array (or array-like) or not. |
 | [copyHash()](#copyhash) | Makes a shallow or deep copy of an object. |
 | [copyHashRemoveKeys()](#copyhashremovekeys) | Shallow copy an object, but omit selected keys. |
 | [mergeHashes()](#mergehashes) | Non-destructive shallow merge of two objects, return the combined one. |
@@ -60,12 +60,15 @@ Here are all the functions included in the tools library, with links to full des
 | [commify()](#commify) | Apply commas to a positive integer using US-style formatting, e.g. `1,000,000`. |
 | [shortFloat()](#shortfloat) | Trim floating point decimal to 2-digit precision, unless digits are zeros. |
 | [pct()](#pct) | Return percentage string given arbitrary value and a maximum limit, e.g. '55%'. |
+| [zeroPad()](#zeropad) | Pad an integer with zeros on the left side, up to a specified max. |
 | [getTextFromSeconds()](#gettextfromseconds) | Convert a number of seconds into a human-readable string, e.g. `3 hours`. |
 | [getSecondsFromText()](#getsecondsfromtext) | Convert a human-readable time delta, e.g. `3 hours` into total seconds. |
 | [getNiceRemainingTime()](#getniceremainingtime) | Calculate estimated remaining time, given progress and start time. |
 | [randArray()](#randarray) | Return a random element from an array. |
 | [pluralize()](#pluralize) | Apply English language pluralization to a word, based on a specified value. |
 | [escapeRegExp()](#escaperegexp) | Escape a string for inclusion in a regular expression. |
+| [ucfirst()](#ucfirst) | Upper-case the first character of a string, lower-case the rest. |
+| [getErrorDescription()](#geterrordescription) | Get a better error description from a Node.js error code. |
 
 ## timeNow
 
@@ -495,6 +498,8 @@ This function parses any date string, Epoch timestamp or Date object, and produc
 | `yyyy_mm_dd` | "2015/03/06" | Formatted string representing date in `YYYY/MM/DD` format. |
 | `hh_mi_ss` | "09:02:10" | Formatted string representing local time in `HH:MI:SS` format. |
 | `epoch` | 1425661330 | Epoch seconds used to generate all the date args. |
+| `offset` | -28800 | Local offset from GMT/UTC in seconds. |
+| `tz` | "GMT-8" | Formatted GMT hour offset string. |
 
 Example usage:
 
@@ -617,6 +622,23 @@ This function calculates a percentage given an arbitrary numerical amount and a 
 	var p = Tools.pct( 751, 1000, true ); // "75%"
 ```
 
+## zeroPad
+
+```
+	STRING zeroPad( NUMBER, MAX )
+```
+
+This function adds zeros to the left side of a number, until the total string length meets a specified maximum (up to 10 characters).  The return value is a string, not a number.
+
+```javascript
+	var padded = Tools.zeroPad( 5, 1 ); // "5"
+	var padded = Tools.zeroPad( 5, 2 ); // "05"
+	var padded = Tools.zeroPad( 5, 3 ); // "005"
+	var padded = Tools.zeroPad( 100, 3 ); // "100"
+	var padded = Tools.zeroPad( 100, 4 ); // "0100"
+	var padded = Tools.zeroPad( 100, 5 ); // "00100"
+```
+
 ## getTextFromSeconds
 
 ```
@@ -712,7 +734,45 @@ This function pluralizes a string using US-English rules, given an arbitrary num
 
 This function escapes a string so that it can be used inside a regular expression.  Meaning, any regular expression metacharacters are prefixed with a backslash, so they are interpreted literally.  It was taken from the [MDN Regular Expression Guide](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Regular_Expressions).
 
+## ucfirst
+
+```
+	STRING ucfirst( STRING )
+```
+
+The function upper-cases the first character of a string, and lower-cases the rest.  This is very similar to the Perl core function of the same name.  Example:
+
+```javascript
+	var first_name = Tools.ucfirst( 'george' );
+	// --> "George"
+```
+
+## getErrorDescription
+
+```
+	STRING getErrorDescription( ERROR )
+```
+
+This function takes a standard Node.js [System Error](https://nodejs.org/api/errors.html#errors_class_system_error) object, such as one emitted when a filesystem or network error occurs, and produces a prettier and more verbose string description.  It uses the 3rd party [errno](https://www.npmjs.com/package/errno) package, and adds its own decorations as well.  Example:
+
+```javascript
+	require('fs').readFile( '/bad/file.txt', function(err, data) {
+		if (err) {
+			console.log( "Native Error: " + err.message );
+			console.log( "Better Error: " + Tools.getErrorDescription(err) );
+		}
+	} );
+	
+	// Outputs:
+	// Native Error: ENOENT, open '/bad/file.txt'
+	// Better Error: No such file or directory (ENOENT, open '/bad/file.txt')
+```
+
+Basically it resolves the Node.js error codes such as `ENOENT` to a human-readable string (i.e. `No such file or directory`), but also appends the raw native error message in parenthesis as well.
+
 # License
+
+The MIT License
 
 Copyright (c) 2015 Joseph Huckaby.
 
