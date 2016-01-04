@@ -305,7 +305,7 @@ module.exports = {
 		
 		args.yyyy_mm_dd = args.yyyy + '/' + args.mm + '/' + args.dd;
 		args.hh_mi_ss = args.hh + ':' + args.mi + ':' + args.ss;
-		args.tz = 'GMT' + (args.offset > 0 ? '+' : '') + args.offset;
+		args.tz = 'GMT' + (args.offset >= 0 ? '+' : '') + args.offset;
 		
 		return args;
 	},
