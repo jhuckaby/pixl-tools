@@ -31,9 +31,9 @@ module.exports = {
 		return shasum.digest('hex').substring(0, len || 64);
 	},
 	
-	digestHex: function(str) {
+	digestHex: function(str, algo) {
 		// digest string using SHA256, return hex hash
-		var shasum = crypto.createHash('sha256');
+		var shasum = crypto.createHash( algo || 'sha256' );
 		shasum.update( str );
 		return shasum.digest('hex');
 	},

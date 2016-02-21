@@ -30,7 +30,7 @@ Here are all the functions included in the tools library, with links to full des
 |---------------|-------------|
 | [timeNow()](#timenow) | Return the current time as Epoch seconds. |
 | [generateUniqueID()](#generateuniqueid) | Generate a unique hexadecimal ID. |
-| [digestHex()](#digesthex) | Digest a string using SHA-256, return hexadecimal hash. |
+| [digestHex()](#digesthex) | Digest a string using SHA-256 or MD5, return hexadecimal hash. |
 | [numKeys()](#numkeys) | Returns the number of keys in an object. |
 | [firstKey()](#firstkey) | Returns the "first" key in an object (undefined order). |
 | [hashKeysToArray()](#hashkeystoarray) | Creates an array out of all object keys (undefined order). |
@@ -102,14 +102,21 @@ Please note that this is *not* designed to be cryptographically secure.  It does
 ## digestHex
 
 ```
-	STRING digestHex( PLAINTEXT )
+	STRING digestHex( PLAINTEXT, [ALGO] )
 ```
 
-This function is just a simple wrapper around Node's [SHA-256](http://en.wikipedia.org/wiki/SHA-2) hashing algorithm.  It returns a 64-character hexadecimal hash of the given string.
+This function is just a simple wrapper around Node's [SHA-256](http://en.wikipedia.org/wiki/SHA-2) or other hashing algorithms.  The default is SHA-256, in which case it returns a 64-character hexadecimal hash of the given string.
 
 ```javascript
 	var sig = Tools.digestHex( "my plaintext string" );
 	// --> "6b4fdfd705d05b11a56b8c3020058b666359d3939b6eda354f529ebad77695c2"
+```
+
+To specify the algorithm, include it as the second argument.  It should be a string set to `md5`, `sha256`, etc.  On recent releases of OpenSSL, typing `openssl list-message-digest-algorithms` will display the available digest algorithms.  Example (MD5):
+
+```javascript
+	var sig = Tools.digestHex( "my plaintext string", "md5" );
+	// --> "659a30fb5d9958326b15c17e8444c123"
 ```
 
 ## numKeys
