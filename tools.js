@@ -4,8 +4,11 @@
 
 var crypto = require('crypto');
 var ErrNo = require('errno');
+var hostname = require('os').hostname();
 
 module.exports = {
+	
+	hostname: hostname,
 	
 	timeNow: function(floor) {
 		// return current epoch time
@@ -23,6 +26,7 @@ module.exports = {
 			'SALT_7fb1b7485647b1782c715474fba28fd1',
 			this.timeNow(),
 			Math.random(),
+			hostname,
 			process.pid,
 			this._uniqueIDCounter,
 			salt || ''
