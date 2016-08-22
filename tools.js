@@ -1,10 +1,15 @@
 // Misc Tools for Node.js
-// Copyright (c) 2015 Joseph Huckaby
+// Copyright (c) 2015 - 2016 Joseph Huckaby
 // Released under the MIT License
 
+var fs = require('fs');
 var crypto = require('crypto');
 var ErrNo = require('errno');
-var hostname = require('os').hostname();
+var os = require('os');
+var hostname = os.hostname();
+
+// discard this once we drop support for Node v0.12:
+require("buffer-indexof-polyfill");
 
 module.exports = {
 	
@@ -36,7 +41,7 @@ module.exports = {
 	},
 	
 	digestHex: function(str, algo) {
-		// digest string using SHA256, return hex hash
+		// digest string using SHA256 (by default), return hex hash
 		var shasum = crypto.createHash( algo || 'sha256' );
 		shasum.update( str );
 		return shasum.digest('hex');
@@ -44,6 +49,7 @@ module.exports = {
 	
 	numKeys: function(hash) {
 		// count keys in hash
+		// Object.keys(hash).length may be faster, but this uses far less memory
 		var count = 0;
 		for (var key in hash) { count++; }
 		return count;
@@ -228,8 +234,8 @@ module.exports = {
 			var name = path.substring(0, slash);
 
 			// advance obj using branch
-			if (typeof(obj.length) == 'undefined') {
-				// obj is hash
+			if ((typeof(obj.length) == 'undefined') || name.match(/\D/)) {
+				// obj is probably a hash
 				if (typeof(obj[name]) != 'undefined') obj = obj[name];
 				else return null;
 			}
@@ -246,7 +252,7 @@ module.exports = {
 		return obj;
 	},
 	
-	substitute: function(text, args) {
+	substitute: function(text, args, fatal) {
 		// perform simple [placeholder] substitution using supplied
 		// args object (or eval) and return transformed text
 		if (typeof(text) == 'undefined') text = '';
@@ -262,9 +268,19 @@ module.exports = {
 			
 			var name = text.substring( open_bracket + 1, close_bracket );
 			var value = '';
-			if (name.indexOf('/') == 0) value = this.lookupPath(name, args);
+			
+			if (name.indexOf('/') == 0) {
+				value = this.lookupPath(name, args);
+				if (value === null) {
+					if (fatal) return null;
+					else value = '__APLB__' + name + '__APRB__';
+				}
+			}
 			else if (typeof(args[name]) != 'undefined') value = args[name];
-			else value = '__APLB__' + name + '__APRB__';
+			else {
+				if (fatal) return null;
+				else value = '__APLB__' + name + '__APRB__';
+			}
 			
 			text = before + value + after;
 		} // while text contains [
@@ -537,6 +553,106 @@ module.exports = {
 		}
 		
 		return msg;
+	},
+	
+	bufferSplit: function(buf, chunk) {
+		// Split a buffer like string split (no reg exp support tho)
+		// WARNING: Splits use SAME MEMORY SPACE as original buffer
+		var idx = -1;
+		var lines = [];
+		
+		while ((idx = buf.indexOf(chunk)) > -1) {
+			lines.push( buf.slice(0, idx) );
+			buf = buf.slice( idx + chunk.length, buf.length );
+		}
+		
+		lines.push(buf);
+		return lines;
+	},
+	
+	fileEachLine: function(file, opts, iterator, callback) {
+		// asynchronously process file line by line, using very little memory
+		var self = this;
+		if (!callback && (typeof(opts) == 'function')) {
+			// support 3-arg convention: file, iterator, callback
+			callback = iterator;
+			iterator = opts;
+			opts = {};
+		}
+		if (!opts) opts = {};
+		if (!opts.buffer_size) opts.buffer_size = 1024;
+		if (!opts.eol) opts.eol = os.EOL;
+		if (!('encoding' in opts)) opts.encoding = 'utf8';
+		
+		var chunk = Buffer.alloc ? Buffer.alloc(opts.buffer_size) : (new Buffer(opts.buffer_size));
+		var lastChunk = null;
+		var processNextLine = null;
+		var processChunk = null;
+		var readNextChunk = null;
+		
+		fs.open(file, "r", function(err, fh) {
+			if (err) return callback(err);
+			
+			processNextLine = function() {
+				// process single line from buffer
+				var line = lines.shift();
+				if (opts.encoding) line = line.toString( opts.encoding );
+				
+				iterator(line, function(err) {
+					if (err) {
+						fs.close(fh, function() {});
+						return callback(err);
+					}
+					// if (lines.length) setImmediate( processNextLine ); // ensure async
+					if (lines.length) process.nextTick( processNextLine );
+					else readNextChunk();
+				});
+			};
+			
+			processChunk = function(err, num_bytes, chunk) {
+				if (err) {
+					fs.close(fh, function() {});
+					return callback(err);
+				}
+				var eof = (num_bytes != opts.buffer_size);
+				var data = chunk.slice(0, num_bytes);
+				
+				if (lastChunk && lastChunk.length) {
+					data = Buffer.concat([lastChunk, data], lastChunk.length + data.length);
+					lastChunk = null;
+				}
+				
+				if (data.length) {
+					lines = self.bufferSplit( data, opts.eol );
+					
+					// see if data ends on EOL -- if not, we have a partial block
+					// fill buffer for next read (unless at EOF)
+					if (data.slice(0 - opts.eol.length).toString() == opts.eol) {
+						lines.pop(); // remove empty line caused by split
+					}
+					else if (!eof) {
+						// more to read, save excess for next loop iteration
+						var line = lines.pop();
+						lastChunk = Buffer.from ? Buffer.from(line) : (new Buffer(line));
+					}
+					
+					if (lines.length) processNextLine();
+					else readNextChunk();
+				}
+				else {
+					// close file and complete
+					fs.close(fh, callback);
+				}
+			};
+			
+			readNextChunk = function() {
+				// read chunk from file
+				fs.read(fh, chunk, 0, opts.buffer_size, null, processChunk);
+			};
+			
+			// begin reading
+			readNextChunk();
+		}); // fs.open
 	}
 	
 };
