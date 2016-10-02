@@ -591,7 +591,10 @@ module.exports = {
 		var readNextChunk = null;
 		
 		fs.open(file, "r", function(err, fh) {
-			if (err) return callback(err);
+			if (err) {
+				if ((err.code == 'ENOENT') && (opts.ignore_not_found)) return callback();
+				else return callback(err);
+			}
 			
 			processNextLine = function() {
 				// process single line from buffer
