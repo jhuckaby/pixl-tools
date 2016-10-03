@@ -71,6 +71,7 @@ Here are all the functions included in the tools library, with links to full des
 | [getErrorDescription()](#geterrordescription) | Get a better error description from a Node.js error code. |
 | [bufferSplit()](#buffersplit) | Split a buffer into chunks given a separator. |
 | [fileEachLine()](#fileeachline) | Iterate over a file line-by-line, async style. |
+| [getpwnam()](#getpwnam) | Fetches user account info, similar to POSIX getpwnam. |
 
 ## timeNow
 
@@ -827,6 +828,33 @@ Tools.fileEachLine( "my_large_spreadsheet.csv",
 		if (err) throw err;
 	}
 );
+```
+
+## getpwnam
+
+```
+OBJECT getpwnam( USERNAME, [USE_CACHE] )
+```
+
+This function fetches local user account information, give a username or numerical UID.  This is similar to the POSIX [getpwnam](http://man7.org/linux/man-pages/man3/getpwnam.3.html) function, which is missing from Node core.  This function works on Linux and OS X only.  It runs in synchronous mode, and returns an object with the following properties, or `null` on error:
+
+| Property Name | Sample Value | Description |
+|---------------|---------------|-------------|
+| `username` | `jhuckaby` | The username of the account. |
+| `password` | `****` | The hashed password of the account (often masked). |
+| `uid` | `501` | The numerical UID (User ID) of the account. |
+| `gid` | `501` | The numeric GID (Group ID) of the account. |
+| `name` | `Joseph Huckaby` | The full name of the user. |
+| `dir` | `/home/jhuckaby` | The home directory path of the user. |
+| `shell` | `/bin/bash` | The login shell used by the user. |
+
+If you pass `true` as the 2nd argument, the user information will be cached in RAM for future queries on the same username or UID.  Example use:
+
+```js
+var info = Tools.getpwnam( "jhuckaby", true );
+if (info) {
+	process.chdir( info.dir );
+}
 ```
 
 # License

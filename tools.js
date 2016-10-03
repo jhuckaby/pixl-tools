@@ -3,6 +3,7 @@
 // Released under the MIT License
 
 var fs = require('fs');
+var cp = require('child_process');
 var crypto = require('crypto');
 var ErrNo = require('errno');
 var os = require('os');
@@ -14,6 +15,7 @@ require("buffer-indexof-polyfill");
 module.exports = {
 	
 	hostname: hostname,
+	user_cache: {},
 	
 	timeNow: function(floor) {
 		// return current epoch time
@@ -656,6 +658,80 @@ module.exports = {
 			// begin reading
 			readNextChunk();
 		}); // fs.open
+	},
+	
+	getpwnam: function(username, use_cache) {
+		// Simulate POSIX getpwnam by querying /etc/passwd on linux, or /usr/bin/id on darwin / OSX.
+		// Accepts username or uid, and can optionally cache results for repeat queries for same user.
+		// Response keys: username, password, uid, gid, name, dir, shell
+		var user = null;
+		
+		if (use_cache && this.user_cache[username]) {
+			return this.copyHash( this.user_cache[username] );
+		}
+		
+		if (process.platform === 'linux') {
+			// use /etc/passwd on linux
+			var lines = null;
+			try { lines = fs.readFileSync('/etc/passwd', 'utf8').trim().split(/\n/); }
+			catch (err) { return null; }
+			
+			for (var idx = 0, len = lines.length; idx < len; idx++) {
+				var cols = lines[idx].trim().split(':');
+				if ((username == cols[0]) || (username == Number(cols[2]))) {
+					user = {
+						username: cols[0],
+						password: cols[1],
+						uid: Number(cols[2]),
+						gid: Number(cols[3]),
+						name: cols[4] && cols[4].split(',')[0],
+						dir: cols[5],
+						shell: cols[6]
+					};
+					idx = len;
+				} // found user
+			} // foreach line
+			
+			if (!user) {
+				// user not found
+				return null;
+			}
+		}
+		else if (process.platform === 'darwin') {
+			// use /usr/bin/id on darwin / OSX
+			var cols = null;
+			try { cols = cp.execSync('/usr/bin/id -P ' + username, { timeout: 1000, encoding: 'utf8' }).trim().split(':'); }
+			catch (err) { return null; }
+			
+			if ((username == cols[0]) || (username == Number(cols[2]))) {
+				user = {
+					username: cols[0],
+					password: cols[1],
+					uid: Number(cols[2]),
+					gid: Number(cols[3]),
+					name: cols[7],
+					dir: cols[8],
+					shell: cols[9]
+				};
+			}
+			else {
+				// something went wrong
+				return null;
+			}
+		}
+		else {
+			// unsupported platform
+			return null;
+		}
+		
+		if (use_cache) {
+			this.user_cache[ user.username ] = user;
+			this.user_cache[ user.uid ] = user;
+			return this.copyHash( user );
+		}
+		else {
+			return user;
+		}
 	}
 	
 };
