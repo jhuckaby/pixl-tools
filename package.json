@@ -1,6 +1,6 @@
 {
   "name": "pixl-tools",
-  "version": "1.0.9",
+  "version": "1.0.10",
   "description": "A set of miscellaneous utility functions for Node.js.",
   "author": "Joseph Huckaby <jhuckaby@gmail.com>",
   "homepage": "https://github.com/jhuckaby/pixl-tools",

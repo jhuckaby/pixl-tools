@@ -591,6 +591,7 @@ module.exports = {
 		var processNextLine = null;
 		var processChunk = null;
 		var readNextChunk = null;
+		var lines = [];
 		
 		fs.open(file, "r", function(err, fh) {
 			if (err) {
