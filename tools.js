@@ -701,7 +701,8 @@ module.exports = {
 		else if (process.platform === 'darwin') {
 			// use /usr/bin/id on darwin / OSX
 			var cols = null;
-			try { cols = cp.execSync('/usr/bin/id -P ' + username, { timeout: 1000, encoding: 'utf8' }).trim().split(':'); }
+			var opts = { timeout: 1000, encoding: 'utf8', stdio: 'pipe' };
+			try { cols = cp.execSync('/usr/bin/id -P ' + username, opts).trim().split(':'); }
 			catch (err) { return null; }
 			
 			if ((username == cols[0]) || (username == Number(cols[2]))) {
