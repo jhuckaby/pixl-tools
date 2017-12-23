@@ -84,7 +84,6 @@ module.exports = {
 	
 	isaArray: function(arg) {
 		// determine if arg is an array or is array-like
-		if (typeof(arg) == 'array') return true;
 		return( !!arg && (typeof(arg) == 'object') && (typeof(arg.length) != 'undefined') );
 	},
 	
@@ -352,7 +351,7 @@ module.exports = {
 		//   hour: { min:0, sec:0 }
 		//   day: { hour:0, min:0, sec:0 }
 		var args = this.getDateArgs(epoch);
-		for (key in zero_args) args[key] = zero_args[key];
+		for (var key in zero_args) args[key] = zero_args[key];
 		
 		// mday is 1-based
 		if (!args['mday']) args['mday'] = 1;
