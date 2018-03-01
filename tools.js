@@ -1,5 +1,5 @@
 // Misc Tools for Node.js
-// Copyright (c) 2015 - 2016 Joseph Huckaby
+// Copyright (c) 2015 - 2018 Joseph Huckaby
 // Released under the MIT License
 
 var fs = require('fs');
@@ -8,9 +8,6 @@ var crypto = require('crypto');
 var ErrNo = require('errno');
 var os = require('os');
 var hostname = os.hostname();
-
-// discard this once we drop support for Node v0.12:
-require("buffer-indexof-polyfill");
 
 module.exports = {
 	
@@ -411,7 +408,7 @@ module.exports = {
 		if (number.length > 3) {
 			var mod = number.length % 3;
 			var output = (mod > 0 ? (number.substring(0,mod)) : '');
-			for (i=0 ; i < Math.floor(number.length / 3); i++) {
+			for (var i=0 ; i < Math.floor(number.length / 3); i++) {
 				if ((mod == 0) && (i == 0))
 					output += number.substring(mod+ 3 * i, mod + 3 * i + 3);
 				else
