@@ -261,11 +261,19 @@ module.exports = {
 			var open_bracket = text.indexOf('[');
 			var close_bracket = text.indexOf(']');
 			
+			if (close_bracket < open_bracket) {
+				// error, mismatched brackets, we must abort
+				return fatal ? null : text.replace(/__APLB__/g, '[').replace(/__APRB__/g, ']');
+			}
+			
 			var before = text.substring(0, open_bracket);
 			var after = text.substring(close_bracket + 1, text.length);
 			
 			var name = text.substring( open_bracket + 1, close_bracket );
 			var value = '';
+			
+			// prevent infinite loop with nested open brackets
+			name = name.replace(/\[/g, '__APLB__');
 			
 			if (name.indexOf('/') == 0) {
 				value = this.lookupPath(name, args);
