@@ -30,6 +30,7 @@ Here are all the functions included in the tools library, with links to full des
 |---------------|-------------|
 | [timeNow()](#timenow) | Return the current time as Epoch seconds. |
 | [generateUniqueID()](#generateuniqueid) | Generate a unique hexadecimal ID. |
+| [generateShortID()](#generateshortid) | Generate a short alphanumeric ID. |
 | [digestHex()](#digesthex) | Digest a string using SHA-256 or MD5, return hexadecimal hash. |
 | [numKeys()](#numkeys) | Returns the number of keys in an object. |
 | [firstKey()](#firstkey) | Returns the "first" key in an object (undefined order). |
@@ -51,7 +52,7 @@ Here are all the functions included in the tools library, with links to full des
 | [deleteObjects()](#deleteobjects) | Find and delete all objects in an array matching a set of criteria. |
 | [alwaysArray()](#alwaysarray) | Wrap variable in array, unless it is already an array. |
 | [lookupPath()](#lookuppath) | Perform a `/filesystem/path/style` lookup in an object tree. |
-| [substitute()](#substitute) | Perform placeholder substitution in a string using square brackets. |
+| [sub()](#sub) | Perform placeholder substitution in a string using square brackets. |
 | [getDateArgs()](#getdateargs) | Parse a date into year, month, day, hour, min, sec, and more. |
 | [getTimeFromArgs()](#gettimefromargs) | Recalculate Epoch seconds given object from [getDateArgs()](#getdateargs). |
 | [normalizeTime()](#normalizetime) | Normalize (floor) Epoch seconds into nearest minute, hour, day, etc. |
@@ -101,6 +102,19 @@ var id = Tools.generateUniqueID( 64, "my extra entropy!" );
 ```
 
 Please note that this is *not* designed to be cryptographically secure.  It doesn't use Node's [crypto.randomBytes](http://nodejs.org/api/crypto.html#crypto_crypto_randombytes_size_callback), because generating true random bits takes time, and can block execution.
+
+## generateShortID
+
+```
+STRING generateShortID( PREFIX )
+```
+
+This function generates a short, semi-unique pseudo-random alphanumeric ID using high-resolution server time, and a static counter.  Both values are converted to [Base-36](https://en.wikipedia.org/wiki/Base36) (lower-case alphanumeric encoding), and combined to produce a 10-12 character ID, plus an optional string prefix if provided.  This algorithm allows for *up to* 1,296 unique IDs per millisecond, but due to server clock adjustments (NTP) this could theoretically collide with itself.  Use with caution.  Example:
+
+```js
+var id = Tools.generateShortID('z');
+// --> "zjcdtsls30r"
+```
 
 ## digestHex
 
@@ -454,10 +468,10 @@ var file = Tools.lookupPath( "/folder1/folder2/file2", tree );
 
 For walking into arrays, simply provide the index number of the element you want.
 
-## substitute
+## sub
 
 ```
-STRING substitute( TEMPLATE, ARGS, FATAL )
+STRING sub( TEMPLATE, ARGS, FATAL )
 ```
 
 This function performs placeholder substitution on a string, using square bracket delimited placeholders which may contain simple keys or even paths.
@@ -471,9 +485,9 @@ var tree = {
 		}
 	}
 };
-var template = "Hello, I would like [/folder1/folder2/file2] and also [/folder/file1] please!";
+var template = "Hello, I would like [/folder1/folder2/file2] and also [/folder1/file1] please!";
 
-var str = Tools.substitute( template, tree );
+var str = Tools.sub( template, tree );
 // --> "Hello, I would like bar and also foo please!"
 ```
 

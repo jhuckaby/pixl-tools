@@ -39,6 +39,21 @@ module.exports = {
 		return shasum.digest('hex').substring(0, len || 64);
 	},
 	
+	_shortIDCounter: 0,
+	generateShortID: function(prefix) {
+		// generate short id using high-res server time, and a static counter,
+		// both converted to alphanumeric lower-case (base-36), ends up being ~10 chars.
+		// allows for *up to* 1,296 unique ids per millisecond (sort of).
+		this._shortIDCounter++;
+		if (this._shortIDCounter >= Math.pow(36, 2)) this._shortIDCounter = 0;
+		
+		return [
+			prefix || '',
+			this.zeroPad( (new Date()).getTime().toString(36), 8 ),
+			this.zeroPad( this._shortIDCounter.toString(36), 2 )
+		].join('');
+	},
+	
 	digestHex: function(str, algo) {
 		// digest string using SHA256 (by default), return hex hash
 		var shasum = crypto.createHash( algo || 'sha256' );
@@ -250,9 +265,42 @@ module.exports = {
 		return obj;
 	},
 	
-	substitute: function(text, args, fatal) {
+	sub: function(text, args, fatal) {
 		// perform simple [placeholder] substitution using supplied
-		// args object (or eval) and return transformed text
+		// args object and return transformed text
+		var self = this;
+		var result = true;
+		var value = '';
+		if (typeof(text) == 'undefined') text = '';
+		text = '' + text;
+		if (!args) args = {};
+		
+		text = text.replace(/\[([^\]]+)\]/g, function(m_all, name) {
+			if (name.indexOf('/') == 0) {
+				value = self.lookupPath(name, args);
+				if (value === null) {
+					result = false;
+					return m_all;
+				}
+				else return value;
+			}
+			else if (typeof(args[name]) != 'undefined') {
+				return args[name];
+			}
+			else {
+				result = false;
+				return m_all;
+			}
+		} );
+		
+		if (!result && fatal) return null;
+		else return text;
+	},
+	
+	substitute: function(text, args, fatal) {
+		// LEGACY METHOD, included for backwards compatibility
+		// perform simple [placeholder] substitution using supplied
+		// args object and return transformed text
 		if (typeof(text) == 'undefined') text = '';
 		text = '' + text;
 		if (!args) args = {};
@@ -297,6 +345,7 @@ module.exports = {
 	getDateArgs: function(thingy) {
 		// return hash containing year, mon, mday, hour, min, sec
 		// given epoch seconds, date object or date string
+		if (!thingy) thingy = new Date();
 		var date = (typeof(thingy) == 'object') ? thingy : (new Date( (typeof(thingy) == 'number') ? (thingy * 1000) : thingy ));
 		var args = {
 			epoch: Math.floor( date.getTime() / 1000 ),
