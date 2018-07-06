@@ -639,7 +639,7 @@ module.exports = {
 		if (!opts.eol) opts.eol = os.EOL;
 		if (!('encoding' in opts)) opts.encoding = 'utf8';
 		
-		var chunk = Buffer.alloc ? Buffer.alloc(opts.buffer_size) : (new Buffer(opts.buffer_size));
+		var chunk = Buffer.alloc(opts.buffer_size);
 		var lastChunk = null;
 		var processNextLine = null;
 		var processChunk = null;
@@ -692,7 +692,7 @@ module.exports = {
 					else if (!eof) {
 						// more to read, save excess for next loop iteration
 						var line = lines.pop();
-						lastChunk = Buffer.from ? Buffer.from(line) : (new Buffer(line));
+						lastChunk = Buffer.from(line);
 					}
 					
 					if (lines.length) processNextLine();
