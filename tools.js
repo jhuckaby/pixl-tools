@@ -476,10 +476,11 @@ module.exports = {
 		else return number;
 	},
 	
-	shortFloat: function(value) {
-		// Shorten floating-point decimal to 2 places, unless they are zeros.
-		if (!value) value = 0;
-		return parseFloat( value.toString().replace(/^(\-?\d+\.[0]*\d{2}).*$/, '$1') );
+	shortFloat: function(value, places) {
+		// Shorten floating-point decimal to N places max
+		if (!places) places = 2;
+		var mult = 10 ** places;
+		return( Math.floor(parseFloat(value || 0) * mult) / mult );
 	},
 	
 	pct: function(count, max, floor) {

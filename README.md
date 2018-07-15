@@ -622,15 +622,15 @@ var c = Tools.commify( 1234567890 ); // "1,234,567,890"
 ## shortFloat
 
 ```
-NUMBER shortFloat( NUMBER )
+NUMBER shortFloat( NUMBER, [PLACES] )
 ```
 
-This function "shortens" a floating point number by only allowing two digits after the decimal point, *unless they are zeros*.
+This function "shortens" a floating point number by only allowing up to `N` digits after the decimal point (defaults to `2`).  You can customize this by passing an optional 2nd argument.  Examples:
 
 ```javascript
-var short = Tools.shortFloat( 0.12345 ); // 0.12
-var short = Tools.shortFloat( 0.00001 ); // 0.00001
-var short = Tools.shortFloat( 0.00123 ); // 0.0012
+var num1 = Tools.shortFloat( 0.12345 ); // 0.12
+var num2 = Tools.shortFloat( 0.00001 ); // 0.0
+var num3 = Tools.shortFloat( 0.00123, 3 ); // 0.001
 ```
 
 ## pct
