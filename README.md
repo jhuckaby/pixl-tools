@@ -59,7 +59,7 @@ Here are all the functions included in the tools library, with links to full des
 | [getTextFromBytes()](#gettextfrombytes) | Convert a byte count into a human readable string, e.g. `5 MB`. |
 | [getBytesFromText()](#getbytesfromtext) | Convert a human-readable size (e.g. `5 MB`) into a raw byte count. |
 | [commify()](#commify) | Apply commas to a positive integer using US-style formatting, e.g. `1,000,000`. |
-| [shortFloat()](#shortfloat) | Trim floating point decimal to 2-digit precision, unless digits are zeros. |
+| [shortFloat()](#shortfloat) | Trim floating point decimal to 2-digit precision (configurable). |
 | [pct()](#pct) | Return percentage string given arbitrary value and a maximum limit, e.g. '55%'. |
 | [zeroPad()](#zeropad) | Pad an integer with zeros on the left side, up to a specified max. |
 | [getTextFromSeconds()](#gettextfromseconds) | Convert a number of seconds into a human-readable string, e.g. `3 hours`. |
