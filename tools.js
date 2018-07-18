@@ -479,7 +479,7 @@ module.exports = {
 	shortFloat: function(value, places) {
 		// Shorten floating-point decimal to N places max
 		if (!places) places = 2;
-		var mult = 10 ** places;
+		var mult = Math.pow(10, places);
 		return( Math.floor(parseFloat(value || 0) * mult) / mult );
 	},
 	
