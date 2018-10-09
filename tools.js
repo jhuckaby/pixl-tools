@@ -11,6 +11,10 @@ var hostname = os.hostname();
 
 module.exports = {
 	
+	"async": require('async'),
+	"mkdirp": require('mkdirp'),
+	"glob": require('glob'),
+	
 	hostname: hostname,
 	user_cache: {},
 	
@@ -230,6 +234,7 @@ module.exports = {
 	},
 	
 	lookupPath: function(path, obj) {
+		// LEGACY METHOD, included for backwards compatibility only -- use getPath() instead
 		// walk through object tree, psuedo-XPath-style
 		// supports arrays as well as objects
 		// return final object or value
@@ -276,21 +281,12 @@ module.exports = {
 		if (!args) args = {};
 		
 		text = text.replace(/\[([^\]]+)\]/g, function(m_all, name) {
-			if (name.indexOf('/') == 0) {
-				value = self.lookupPath(name, args);
-				if (value === null) {
-					result = false;
-					return m_all;
-				}
-				else return value;
-			}
-			else if (typeof(args[name]) != 'undefined') {
-				return args[name];
-			}
-			else {
+			value = self.getPath(args, name);
+			if (value === undefined) {
 				result = false;
 				return m_all;
 			}
+			else return value;
 		} );
 		
 		if (!result && fatal) return null;
@@ -298,7 +294,7 @@ module.exports = {
 	},
 	
 	substitute: function(text, args, fatal) {
-		// LEGACY METHOD, included for backwards compatibility
+		// LEGACY METHOD, included for backwards compatibility only -- use sub() instead
 		// perform simple [placeholder] substitution using supplied
 		// args object and return transformed text
 		if (typeof(text) == 'undefined') text = '';
@@ -340,6 +336,59 @@ module.exports = {
 		} // while text contains [
 		
 		return text.replace(/__APLB__/g, '[').replace(/__APRB__/g, ']');
+	},
+	
+	setPath: function(target, path, value) {
+		// set path using dir/slash/syntax or dot.path.syntax
+		// preserve dots and slashes if escaped
+		var parts = path.replace(/\\\./g, '__PXDOT__').replace(/\\\//g, '__PXSLASH__').split(/[\.\/]/).map( function(elem) {
+			return elem.replace(/__PXDOT__/g, '.').replace(/__PXSLASH__/g, '/');
+		} );
+		
+		var key = parts.pop();
+		
+		// traverse path
+		while (parts.length) {
+			var part = parts.shift();
+			if (part) {
+				if (!(part in target)) {
+					// auto-create nodes
+					target[part] = {};
+				}
+				if (typeof(target[part]) != 'object') {
+					// path runs into non-object
+					return false;
+				}
+				target = target[part];
+			}
+		}
+		
+		target[key] = value;
+		return true;
+	},
+	
+	getPath: function(target, path) {
+		// get path using dir/slash/syntax or dot.path.syntax
+		// preserve dots and slashes if escaped
+		var parts = path.replace(/\\\./g, '__PXDOT__').replace(/\\\//g, '__PXSLASH__').split(/[\.\/]/).map( function(elem) {
+			return elem.replace(/__PXDOT__/g, '.').replace(/__PXSLASH__/g, '/');
+		} );
+		
+		var key = parts.pop();
+		
+		// traverse path
+		while (parts.length) {
+			var part = parts.shift();
+			if (part) {
+				if (typeof(target[part]) != 'object') {
+					// path runs into non-object
+					return undefined;
+				}
+				target = target[part];
+			}
+		}
+		
+		return target[key];
 	},
 	
 	getDateArgs: function(thingy) {
@@ -493,6 +542,16 @@ module.exports = {
 	zeroPad: function(value, len) {
 		// Pad a number with zeroes to achieve a desired total length (max 10)
 		return ('0000000000' + value).slice(0 - len);
+	},
+	
+	clamp: function(val, min, max) {
+		// simple math clamp implementation
+		return Math.max(min, Math.min(max, val));
+	},
+	
+	lerp: function(start, end, amount) {
+		// simple linear interpolation algo
+		return start + ((end - start) * this.clamp(amount, 0, 1));
 	},
 	
 	getTextFromSeconds: function(sec, abbrev, no_secondary) {

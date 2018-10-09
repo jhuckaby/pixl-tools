@@ -22,6 +22,25 @@ Then call the function of your choice:
 var id = Tools.generateUniqueID();
 ```
 
+# Module List
+
+Because I use these three modules so often, I've included them in pixl-tools as a convenience.  Here is how to access them:
+
+| Module Name | Description |
+|-------------|-------------|
+| `Tools.async` | The [async](https://www.npmjs.com/package/async) module is essential for parallel and series async loops and queues. |
+| `Tools.mkdirp` | The [mkdirp](https://www.npmjs.com/package/mkdirp) module creates directories, including parent directories. |
+| `Tools.glob` | The [glob](https://www.npmjs.com/package/glob) module performs filesystem globs (searches). |
+
+Example use:
+
+```js
+var Tools = require('pixl-tools');
+var async = Tools.async;
+var mkdirp = Tools.mkdirp;
+var glob = Tools.glob;
+```
+
 # Function List
 
 Here are all the functions included in the tools library, with links to full descriptions and examples:
@@ -51,8 +70,9 @@ Here are all the functions included in the tools library, with links to full des
 | [deleteObject()](#deleteobject) | Find and delete an object in an array matching a set of criteria. |
 | [deleteObjects()](#deleteobjects) | Find and delete all objects in an array matching a set of criteria. |
 | [alwaysArray()](#alwaysarray) | Wrap variable in array, unless it is already an array. |
-| [lookupPath()](#lookuppath) | Perform a `/filesystem/path/style` lookup in an object tree. |
 | [sub()](#sub) | Perform placeholder substitution in a string using square brackets. |
+| [setPath()](#setpath) | Set path value using `dir/slash/syntax` or `dot.path.syntax`. |
+| [getPath()](#getpath) | Get path value using `dir/slash/syntax` or `dot.path.syntax`. |
 | [getDateArgs()](#getdateargs) | Parse a date into year, month, day, hour, min, sec, and more. |
 | [getTimeFromArgs()](#gettimefromargs) | Recalculate Epoch seconds given object from [getDateArgs()](#getdateargs). |
 | [normalizeTime()](#normalizetime) | Normalize (floor) Epoch seconds into nearest minute, hour, day, etc. |
@@ -62,6 +82,8 @@ Here are all the functions included in the tools library, with links to full des
 | [shortFloat()](#shortfloat) | Trim floating point decimal to 2-digit precision (configurable). |
 | [pct()](#pct) | Return percentage string given arbitrary value and a maximum limit, e.g. '55%'. |
 | [zeroPad()](#zeropad) | Pad an integer with zeros on the left side, up to a specified max. |
+| [clamp()](#clamp) | Clamps a number value inside a specified min/max range. |
+| [lerp()](#lerp) | Performs linear interpolation between two values and a specified amount. |
 | [getTextFromSeconds()](#gettextfromseconds) | Convert a number of seconds into a human-readable string, e.g. `3 hours`. |
 | [getSecondsFromText()](#getsecondsfromtext) | Convert a human-readable time delta, e.g. `3 hours` into total seconds. |
 | [getNiceRemainingTime()](#getniceremainingtime) | Calculate estimated remaining time, given progress and start time. |
@@ -444,30 +466,6 @@ This function will wrap anything passed to it into an array and return the array
 var arr = Tools.alwaysArray( maybe_array );
 ```
 
-## lookupPath
-
-```
-MIXED lookupPath( PATH, ARGS )
-```
-
-This function will perform a directory-style path lookup on a hash/array tree, returning whatever object or value is pointed to, or `null` if not found.
-
-```javascript
-var tree = {
-	folder1: {
-		file1: "foo",
-		folder2: {
-			file2: "bar"
-		}
-	}
-};
-
-var file = Tools.lookupPath( "/folder1/folder2/file2", tree );
-// --> "bar"
-```
-
-For walking into arrays, simply provide the index number of the element you want.
-
 ## sub
 
 ```
@@ -494,6 +492,53 @@ var str = Tools.sub( template, tree );
 You can omit the leading slashes if you are doing single-level hash lookups.
 
 If you pass true for the `FATAL` argument, the function will return `null` if any variable lookups fail.  The default behavior is to preserve the original formatting (with placeholders and all) if the lookup fails.
+
+## setPath
+
+```
+BOOLEAN setPath( OBJECT, PATH, VALUE )
+```
+
+This function will set a property value inside a hash/array tree, by first traversing a directory-style path.  Will auto-create new objects if needed.  You can use either `dir/slash/syntax` or `dot.path.syntax`.  Returns `true` on success or `false` on failure.
+
+```js
+var tree = {
+	folder1: {
+		file1: "foo"
+	}
+};
+
+Tools.setPath( tree, "folder1/folder2/file2", "bar" );
+```
+
+For walking through arrays, simply provide the index number of the element you want.
+
+## getPath
+
+```
+MIXED getPath( OBJECT, PATH )
+```
+
+This function will perform a directory-style path lookup on a hash/array tree, returning whatever object or value is pointed to, or `undefined` if not found.  You can use either `dir/slash/syntax` or `dot.path.syntax`.
+
+```javascript
+var tree = {
+	folder1: {
+		file1: "foo",
+		folder2: {
+			file2: "bar"
+		}
+	}
+};
+
+var file = Tools.getPath( tree, "folder1/folder2/file2" );
+// --> "bar"
+
+var file = Tools.getPath( tree, "folder1.folder2.file2" );
+// --> "bar"
+```
+
+For walking into arrays, simply provide the index number of the element you want.
 
 ## getDateArgs
 
@@ -663,6 +708,32 @@ var padded = Tools.zeroPad( 5, 3 ); // "005"
 var padded = Tools.zeroPad( 100, 3 ); // "100"
 var padded = Tools.zeroPad( 100, 4 ); // "0100"
 var padded = Tools.zeroPad( 100, 5 ); // "00100"
+```
+
+## clamp
+
+```
+NUMBER clamp( NUMBER, MIN, MAX )
+```
+
+This function performs a simple mathematical "clamp" operation, restricting a value between a defined range.  This is just a convenience method, which can save you a few keystrokes.  Example:
+
+```js
+var clamped = Tools.clamp( 50, 0, 10 );
+// --> 10
+```
+
+## lerp
+
+```
+NUMBER lerp( START, END, AMOUNT )
+```
+
+This function performs linear interpolation between two values and a specified amount between `0.0` and `1.0`.  This is just a convenience method, which can save you a few keystrokes.  Example:
+
+```js
+var lerped = Tools.lerp( 0, 50, 0.25 );
+// --> 12.5
 ```
 
 ## getTextFromSeconds
