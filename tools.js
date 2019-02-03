@@ -787,26 +787,24 @@ module.exports = {
 		if (process.platform === 'linux') {
 			// use /etc/passwd on linux
 			var lines = null;
-			try { lines = fs.readFileSync('/etc/passwd', 'utf8').trim().split(/\n/); }
+			var cols = null;
+			//try { lines = fs.readFileSync('/etc/passwd', 'utf8').trim().split(/\n/); }
+			var opts = { timeout: 1000, encoding: 'utf8', stdio: 'pipe' };
+			try { cols = cp.execSync('/usr/bin/getent passwd | grep ' + username, opts).trim().split(':'); }
 			catch (err) { return null; }
 			
-			for (var idx = 0, len = lines.length; idx < len; idx++) {
-				var cols = lines[idx].trim().split(':');
-				if ((username == cols[0]) || (username == Number(cols[2]))) {
-					user = {
-						username: cols[0],
-						password: cols[1],
-						uid: Number(cols[2]),
-						gid: Number(cols[3]),
-						name: cols[4] && cols[4].split(',')[0],
-						dir: cols[5],
-						shell: cols[6]
-					};
-					idx = len;
-				} // found user
-			} // foreach line
-			
-			if (!user) {
+			if ((username == cols[0]) || (username == Number(cols[2]))) {
+				user = {
+					username: cols[0],
+					password: cols[1],
+					uid: Number(cols[2]),
+					gid: Number(cols[3]),
+					name: cols[4] && cols[4].split(',')[0],
+					dir: cols[5],
+					shell: cols[6]
+				};
+			}
+			else {
 				// user not found
 				return null;
 			}
