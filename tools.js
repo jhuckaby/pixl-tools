@@ -9,6 +9,18 @@ var ErrNo = require('errno');
 var os = require('os');
 var hostname = os.hostname();
 
+var MONTH_NAMES = [ 
+	'January', 'February', 'March', 'April', 'May', 'June', 
+	'July', 'August', 'September', 'October', 'November', 'December' ];
+
+var SHORT_MONTH_NAMES = [ 'Jan', 'Feb', 'Mar', 'Apr', 'May', 
+	'June', 'July', 'Aug', 'Sept', 'Oct', 'Nov', 'Dec' ];
+
+var DAY_NAMES = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 
+	'Thursday', 'Friday', 'Saturday'];
+	
+var SHORT_DAY_NAMES = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+
 module.exports = {
 	
 	"async": require('async'),
@@ -391,6 +403,12 @@ module.exports = {
 		return target[key];
 	},
 	
+	formatDate: function(thingy, template) {
+		// format date using get_date_args
+		// e.g. '[yyyy]/[mm]/[dd]' or '[dddd], [mmmm] [mday], [yyyy]' or '[hour12]:[mi] [ampm]'
+		return this.sub( template, this.getDateArgs(thingy) );
+	},
+	
 	getDateArgs: function(thingy) {
 		// return hash containing year, mon, mday, hour, min, sec
 		// given epoch seconds, date object or date string
@@ -410,6 +428,8 @@ module.exports = {
 		};
 		
 		args.yyyy = '' + args.year;
+		args.yy = args.year % 100;
+		if (args.yy < 10) args.yy = "0" + args.yy; else args.yy = '' + args.yy;
 		if (args.mon < 10) args.mm = "0" + args.mon; else args.mm = '' + args.mon;
 		if (args.mday < 10) args.dd = "0" + args.mday; else args.dd = '' + args.mday;
 		if (args.hour < 10) args.hh = "0" + args.hour; else args.hh = '' + args.hour;
@@ -427,9 +447,16 @@ module.exports = {
 			if (!args.hour12) args.hour12 = 12;
 		}
 		
+		args.AMPM = args.ampm.toUpperCase();
 		args.yyyy_mm_dd = args.yyyy + '/' + args.mm + '/' + args.dd;
 		args.hh_mi_ss = args.hh + ':' + args.mi + ':' + args.ss;
 		args.tz = 'GMT' + (args.offset >= 0 ? '+' : '') + args.offset;
+		
+		// add formatted month and weekdays
+		args.mmm = SHORT_MONTH_NAMES[ args.mon - 1 ];
+		args.mmmm = MONTH_NAMES[ args.mon - 1];
+		args.ddd = SHORT_DAY_NAMES[ args.wday ];
+		args.dddd = DAY_NAMES[ args.wday ];
 		
 		return args;
 	},

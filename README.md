@@ -76,6 +76,7 @@ Here are all the functions included in the tools library, with links to full des
 | [getDateArgs()](#getdateargs) | Parse a date into year, month, day, hour, min, sec, and more. |
 | [getTimeFromArgs()](#gettimefromargs) | Recalculate Epoch seconds given object from [getDateArgs()](#getdateargs). |
 | [normalizeTime()](#normalizetime) | Normalize (floor) Epoch seconds into nearest minute, hour, day, etc. |
+| [formatDate()](#formatdate) | Format date/time in local timezone using a template string. |
 | [getTextFromBytes()](#gettextfrombytes) | Convert a byte count into a human readable string, e.g. `5 MB`. |
 | [getBytesFromText()](#getbytesfromtext) | Convert a human-readable size (e.g. `5 MB`) into a raw byte count. |
 | [commify()](#commify) | Apply commas to a positive integer using US-style formatting, e.g. `1,000,000`. |
@@ -551,24 +552,30 @@ This function parses any date string, Epoch timestamp or Date object, and produc
 | Key | Sample Value | Description |
 | --- | ------------ | ----------- |
 | `year` | 2015 | Full year as integer. | 
-| `mon` | 3 | Month of year as integer (1 - 12). | 
-| `mday` | 6 | Day of month as integer (1 - 31). | 
-| `wday` | 4 | Day of week as integer (0 - 6). | 
-| `hour` | 9 | Hour of day as integer (0 - 23). | 
-| `min` | 2 | Minute of hour as integer (0 - 59). | 
-| `sec` | 10 | Second of minute as integer (0 - 59). | 
-| `msec` | 999 | Millisecond of second as integer (0 - 999). | 
+| `yy` | "15" | 2-digit year as string, with padded zeros if needed. |
 | `yyyy` | "2015" | 4-digit year as string. | 
+| `mon` | 3 | Month of year as integer (1 - 12). | 
 | `mm` | "03" | 2-digit month as string with padded zeros if needed. | 
+| `mmm` | "Mar" | Month name abbreviated to first three letters. |
+| `mmmm` | "March" | Full month name. |
+| `mday` | 6 | Day of month as integer (1 - 31). | 
 | `dd` | "06" | 2-digit day as string with padded zeros if needed. | 
+| `wday` | 4 | Day of week as integer (0 - 6), starting with Sunday. | 
+| `ddd` | "Thu" | Weekday name abbreviated to first three letters. |
+| `dddd` | "Thursday" | Full weekday name. |
+| `hour` | 9 | Hour of day as integer (0 - 23). | 
+| `hour12` | 9 | Hour expressed in 12-hour time (i.e. 3 PM = 3). | 
 | `hh` | "09" | 2-digit hour as string with padded zeros if needed. | 
+| `min` | 2 | Minute of hour as integer (0 - 59). | 
 | `mi` | "02" | 2-digit minute as string with padded zeros if needed. | 
+| `sec` | 10 | Second of minute as integer (0 - 59). | 
 | `ss` | "10" | 2-digit second as string with padded zeros if needed. | 
-| `hour12` | 9 | Hour expressed in 12-hour time (i.e. 1 PM = 1.) | 
+| `msec` | 999 | Millisecond of second as integer (0 - 999). | 
 | `ampm` | "am" | String representing ante meridiem (`am`) or post meridiem (`pm`). | 
+| `AMPM` | "AM" | Upper-case version of `ampm`. |
 | `yyyy_mm_dd` | "2015/03/06" | Formatted string representing date in `YYYY/MM/DD` format. |
 | `hh_mi_ss` | "09:02:10" | Formatted string representing local time in `HH:MI:SS` format. |
-| `epoch` | 1425661330 | Epoch seconds used to generate all the date args. |
+| `epoch` | 1425661330 | Epoch seconds used to generate all the date properties. |
 | `offset` | -28800 | Local offset from GMT/UTC in seconds. |
 | `tz` | "GMT-8" | Formatted GMT hour offset string. |
 
@@ -612,6 +619,27 @@ You can actually set the values to non-zero.  For example, to return the Epoch t
 
 ```javascript
 var noon = Tools.normalizeTime( Tools.timeNow(), { hour: 12, min: 0, sec: 0 } );
+```
+
+## formatDate
+
+```
+STRING formatDate( MIXED, STRING )
+```
+
+This function parses any date string, Epoch timestamp or Date object, and produces a formatted date/time string according to a custom template, and in the local timezone.  The template is populated using [sub()](#sub) (i.e. square bracket syntax) and can use any of the date/time properties returned by [getDateArgs()](#getdateargs).  Examples:
+
+```js
+var now = new Date();
+
+var str = Tools.formatDate( now, "[yyyy]/[mm]/[dd]" );
+// 2019/03/22
+
+var str = Tools.formatDate( now, "[dddd], [mmmm] [mday], [yyyy]" );
+// Friday, March 22, 2019
+
+var str = Tools.formatDate( now, "[hour12]:[mi] [ampm]" );
+// 10:43 am
 ```
 
 ## getTextFromBytes
