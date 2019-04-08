@@ -96,6 +96,7 @@ Here are all the functions included in the tools library, with links to full des
 | [bufferSplit()](#buffersplit) | Split a buffer into chunks given a separator. |
 | [fileEachLine()](#fileeachline) | Iterate over a file line-by-line, async style. |
 | [getpwnam()](#getpwnam) | Fetches user account info, similar to POSIX getpwnam. |
+| [tween()](#tween) | Compute a value between two other values, for use in animation. |
 
 ## timeNow
 
@@ -970,11 +971,35 @@ if (info) {
 }
 ```
 
+## tween
+
+```
+NUMBER tween( START, END, AMOUNT, MODE, ALGORITHM )
+```
+
+This function calculates a [tween](https://en.wikipedia.org/wiki/Inbetweening) between two numbers, and returns the in-between value.  For example, this can be used to control animation with "easing" (i.e. ease-in, ease-out), and also custom mathematical curves like quadratic, quintic, etc.  Example use:
+
+```js
+var x = Tools.tween( 0, 150, 0.5, 'EaseOut', 'Quadratic' );
+```
+
+The output will be somewhere between `0` and `150`, controlled by the `EaseOut` mode and `Quadratic` algorithm.  If you had selected the `Linear` algorithm, this would be exactly `75` (halfway between the start and end).
+
+Here is a more detailed list of the function arguments:
+
+| Argument | Description |
+|----------|-------------|
+| `START` | The starting value for the property (any number). |
+| `END` | The ending value for the property (any number). |
+| `AMOUNT` | This value should be between `0.0` and `1.0`, and sets the position along the animation path. |
+| `MODE` | The animation mode as string, one of `EaseIn`, `EaseOut` or `EaseInOut`. |
+| `ALGORITHM` | The algorithm name as string, one of `Linear`, `Quadratic`, `Cubic`, `Quartetic`, `Quintic`, `Sine` or `Circular`. |
+
 # License
 
 The MIT License
 
-Copyright (c) 2015 - 2018 Joseph Huckaby.
+Copyright (c) 2015 - 2019 Joseph Huckaby.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal

@@ -21,6 +21,24 @@ var DAY_NAMES = ['Sunday', 'Monday', 'Tuesday', 'Wednesday',
 	
 var SHORT_DAY_NAMES = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
+var EASE_ALGOS = {
+	Linear: function(_amount) { return _amount; },
+	Quadratic: function(_amount) { return Math.pow(_amount, 2); },
+	Cubic: function(_amount) { return Math.pow(_amount, 3); },
+	Quartetic: function(_amount) { return Math.pow(_amount, 4); },
+	Quintic: function(_amount) { return Math.pow(_amount, 5); },
+	Sine: function(_amount) { return 1 - Math.sin((1 - _amount) * Math.PI / 2); },
+	Circular: function(_amount) { return 1 - Math.sin(Math.acos(_amount)); }
+};
+
+var EASE_MODES = {
+	EaseIn: function(_amount, _algo) { return EASE_ALGOS[_algo](_amount); },
+	EaseOut: function(_amount, _algo) { return 1 - EASE_ALGOS[_algo](1 - _amount); },
+	EaseInOut: function(_amount, _algo) {
+		return (_amount <= 0.5) ? EASE_ALGOS[_algo](2 * _amount) / 2 : (2 - EASE_ALGOS[_algo](2 * (1 - _amount))) / 2;
+	}
+};
+
 module.exports = {
 	
 	"async": require('async'),
@@ -872,6 +890,16 @@ module.exports = {
 		else {
 			return user;
 		}
+	},
+	
+	tween: function(start, end, amount, mode, algo) {
+		// Calculate the "tween" (value between two other values) using a variety of algorithms.
+		// Useful for computing positions for animation frames.
+		// Omit mode and algo for 'lerp' (simple linear interpolation).
+		if (!mode) mode = 'EaseOut';
+		if (!algo) algo = 'Linear';
+		amount = this.clamp( amount, 0.0, 1.0 );
+		return start + (EASE_MODES[mode]( amount, algo ) * (end - start));
 	}
 	
 };
