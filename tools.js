@@ -655,7 +655,8 @@ module.exports = {
 			m: 60,
 			h: 60 * 60,
 			d: 60 * 60 * 24,
-			w: 60 * 60 * 24 * 7
+			w: 60 * 60 * 24 * 7,
+			y: 60 * 60 * 24 * 365
 		};
 		var seconds = 0;
 		text = text.toString().replace(/([\d\.]+)\s*(\w)\w*\s*/g, function(m_all, m_g1, m_g2) {
