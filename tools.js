@@ -1,5 +1,5 @@
 // Misc Tools for Node.js
-// Copyright (c) 2015 - 2018 Joseph Huckaby
+// Copyright (c) 2015 - 2019 Joseph Huckaby
 // Released under the MIT License
 
 var fs = require('fs');
@@ -44,6 +44,7 @@ module.exports = {
 	"async": require('async'),
 	"mkdirp": require('mkdirp'),
 	"glob": require('glob'),
+	"rimraf": require('rimraf'),
 	
 	hostname: hostname,
 	user_cache: {},

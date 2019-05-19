@@ -1,3 +1,64 @@
+<details><summary>Table of Contents</summary>
+
+<!-- toc -->
+- [Overview](#overview)
+- [Usage](#usage)
+- [Module List](#module-list)
+- [Function List](#function-list)
+	* [timeNow](#timenow)
+	* [generateUniqueID](#generateuniqueid)
+	* [generateShortID](#generateshortid)
+	* [digestHex](#digesthex)
+	* [numKeys](#numkeys)
+	* [firstKey](#firstkey)
+	* [hashKeysToArray](#hashkeystoarray)
+	* [hashValuesToArray](#hashvaluestoarray)
+	* [isaHash](#isahash)
+	* [isaArray](#isaarray)
+	* [copyHash](#copyhash)
+	* [copyHashRemoveKeys](#copyhashremovekeys)
+	* [mergeHashes](#mergehashes)
+	* [mergeHashInto](#mergehashinto)
+	* [parseQueryString](#parsequerystring)
+	* [composeQueryString](#composequerystring)
+	* [findObjectsIdx](#findobjectsidx)
+	* [findObjectIdx](#findobjectidx)
+	* [findObject](#findobject)
+	* [findObjects](#findobjects)
+	* [deleteObject](#deleteobject)
+	* [deleteObjects](#deleteobjects)
+	* [alwaysArray](#alwaysarray)
+	* [sub](#sub)
+	* [setPath](#setpath)
+	* [getPath](#getpath)
+	* [getDateArgs](#getdateargs)
+	* [getTimeFromArgs](#gettimefromargs)
+	* [normalizeTime](#normalizetime)
+	* [formatDate](#formatdate)
+	* [getTextFromBytes](#gettextfrombytes)
+	* [getBytesFromText](#getbytesfromtext)
+	* [commify](#commify)
+	* [shortFloat](#shortfloat)
+	* [pct](#pct)
+	* [zeroPad](#zeropad)
+	* [clamp](#clamp)
+	* [lerp](#lerp)
+	* [getTextFromSeconds](#gettextfromseconds)
+	* [getSecondsFromText](#getsecondsfromtext)
+	* [getNiceRemainingTime](#getniceremainingtime)
+	* [randArray](#randarray)
+	* [pluralize](#pluralize)
+	* [escapeRegExp](#escaperegexp)
+	* [ucfirst](#ucfirst)
+	* [getErrorDescription](#geterrordescription)
+	* [bufferSplit](#buffersplit)
+	* [fileEachLine](#fileeachline)
+	* [getpwnam](#getpwnam)
+	* [tween](#tween)
+- [License](#license)
+
+</details>
+
 # Overview
 
 This module contains a set of miscellaneous utility functions that don't fit into any particular category.
@@ -31,6 +92,7 @@ Because I use these three modules so often, I've included them in pixl-tools as 
 | `Tools.async` | The [async](https://www.npmjs.com/package/async) module is essential for parallel and series async loops and queues. |
 | `Tools.mkdirp` | The [mkdirp](https://www.npmjs.com/package/mkdirp) module creates directories, including parent directories. |
 | `Tools.glob` | The [glob](https://www.npmjs.com/package/glob) module performs filesystem globs (searches). |
+| `Tools.rimraf` | The [rimraf](https://www.npmjs.com/package/rimraf) module performs recursive directory deletes. |
 
 Example use:
 
@@ -44,59 +106,6 @@ var glob = Tools.glob;
 # Function List
 
 Here are all the functions included in the tools library, with links to full descriptions and examples:
-
-| Function Name | Description |
-|---------------|-------------|
-| [timeNow()](#timenow) | Return the current time as Epoch seconds. |
-| [generateUniqueID()](#generateuniqueid) | Generate a unique hexadecimal ID. |
-| [generateShortID()](#generateshortid) | Generate a short alphanumeric ID. |
-| [digestHex()](#digesthex) | Digest a string using SHA-256 or MD5, return hexadecimal hash. |
-| [numKeys()](#numkeys) | Returns the number of keys in an object. |
-| [firstKey()](#firstkey) | Returns the "first" key in an object (undefined order). |
-| [hashKeysToArray()](#hashkeystoarray) | Creates an array out of all object keys (undefined order). |
-| [hashValuesToArray()](#hashvaluestoarray) | Creates an array out of all object values (undefined order). |
-| [isaHash()](#isahash) | Determines if a variable is a hash (object) or not. |
-| [isaArray()](#isaarray) | Determines if a variable is an array (or array-like) or not. |
-| [copyHash()](#copyhash) | Makes a shallow or deep copy of an object. |
-| [copyHashRemoveKeys()](#copyhashremovekeys) | Shallow copy an object, but omit selected keys. |
-| [mergeHashes()](#mergehashes) | Non-destructive shallow merge of two objects, return the combined one. |
-| [mergeHashInto()](#mergehashinto) | Merge one hash into another (destructive). |
-| [parseQueryString()](#parsequerystring) | Parse a URL query string into key/value pairs. |
-| [composeQueryString()](#composequerystring) | Compose a URL query string given an object of key/value pairs. |
-| [findObjectsIdx()](#findobjectsidx) | Locate object indexes in an array matching a set of criteria. |
-| [findObjectIdx()](#findobjectidx) | Locate first object index in an array matching a set of criteria. |
-| [findObject()](#findobject) | Locate and return first object in an array matching a set of criteria. |
-| [findObjects()](#findobjects) | Locate and return all objects in an array matching a set of criteria. |
-| [deleteObject()](#deleteobject) | Find and delete an object in an array matching a set of criteria. |
-| [deleteObjects()](#deleteobjects) | Find and delete all objects in an array matching a set of criteria. |
-| [alwaysArray()](#alwaysarray) | Wrap variable in array, unless it is already an array. |
-| [sub()](#sub) | Perform placeholder substitution in a string using square brackets. |
-| [setPath()](#setpath) | Set path value using `dir/slash/syntax` or `dot.path.syntax`. |
-| [getPath()](#getpath) | Get path value using `dir/slash/syntax` or `dot.path.syntax`. |
-| [getDateArgs()](#getdateargs) | Parse a date into year, month, day, hour, min, sec, and more. |
-| [getTimeFromArgs()](#gettimefromargs) | Recalculate Epoch seconds given object from [getDateArgs()](#getdateargs). |
-| [normalizeTime()](#normalizetime) | Normalize (floor) Epoch seconds into nearest minute, hour, day, etc. |
-| [formatDate()](#formatdate) | Format date/time in local timezone using a template string. |
-| [getTextFromBytes()](#gettextfrombytes) | Convert a byte count into a human readable string, e.g. `5 MB`. |
-| [getBytesFromText()](#getbytesfromtext) | Convert a human-readable size (e.g. `5 MB`) into a raw byte count. |
-| [commify()](#commify) | Apply commas to a positive integer using US-style formatting, e.g. `1,000,000`. |
-| [shortFloat()](#shortfloat) | Trim floating point decimal to 2-digit precision (configurable). |
-| [pct()](#pct) | Return percentage string given arbitrary value and a maximum limit, e.g. '55%'. |
-| [zeroPad()](#zeropad) | Pad an integer with zeros on the left side, up to a specified max. |
-| [clamp()](#clamp) | Clamps a number value inside a specified min/max range. |
-| [lerp()](#lerp) | Performs linear interpolation between two values and a specified amount. |
-| [getTextFromSeconds()](#gettextfromseconds) | Convert a number of seconds into a human-readable string, e.g. `3 hours`. |
-| [getSecondsFromText()](#getsecondsfromtext) | Convert a human-readable time delta, e.g. `3 hours` into total seconds. |
-| [getNiceRemainingTime()](#getniceremainingtime) | Calculate estimated remaining time, given progress and start time. |
-| [randArray()](#randarray) | Return a random element from an array. |
-| [pluralize()](#pluralize) | Apply English language pluralization to a word, based on a specified value. |
-| [escapeRegExp()](#escaperegexp) | Escape a string for inclusion in a regular expression. |
-| [ucfirst()](#ucfirst) | Upper-case the first character of a string, lower-case the rest. |
-| [getErrorDescription()](#geterrordescription) | Get a better error description from a Node.js error code. |
-| [bufferSplit()](#buffersplit) | Split a buffer into chunks given a separator. |
-| [fileEachLine()](#fileeachline) | Iterate over a file line-by-line, async style. |
-| [getpwnam()](#getpwnam) | Fetches user account info, similar to POSIX getpwnam. |
-| [tween()](#tween) | Compute a value between two other values, for use in animation. |
 
 ## timeNow
 
@@ -577,7 +586,7 @@ This function parses any date string, Epoch timestamp or Date object, and produc
 | `yyyy_mm_dd` | "2015/03/06" | Formatted string representing date in `YYYY/MM/DD` format. |
 | `hh_mi_ss` | "09:02:10" | Formatted string representing local time in `HH:MI:SS` format. |
 | `epoch` | 1425661330 | Epoch seconds used to generate all the date properties. |
-| `offset` | -28800 | Local offset from GMT/UTC in seconds. |
+| `offset` | -8 | Local offset from GMT/UTC in hours. |
 | `tz` | "GMT-8" | Formatted GMT hour offset string. |
 
 Example usage:
@@ -997,9 +1006,9 @@ Here is a more detailed list of the function arguments:
 
 # License
 
-The MIT License
+**The MIT License**
 
-Copyright (c) 2015 - 2019 Joseph Huckaby.
+*Copyright (c) 2015 - 2019 Joseph Huckaby.*
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
