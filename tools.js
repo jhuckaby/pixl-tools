@@ -837,7 +837,7 @@ module.exports = {
 			var cols = null;
 			//try { lines = fs.readFileSync('/etc/passwd', 'utf8').trim().split(/\n/); }
 			var opts = { timeout: 1000, encoding: 'utf8', stdio: 'pipe' };
-			try { cols = cp.execSync('/usr/bin/getent passwd | grep ' + username, opts).trim().split(':'); }
+			try { cols = cp.execSync('/usr/bin/getent passwd ' + username, opts).trim().split(':'); }
 			catch (err) { return null; }
 			
 			if ((username == cols[0]) || (username == Number(cols[2]))) {
