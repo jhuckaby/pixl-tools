@@ -159,6 +159,15 @@ module.exports = {
 		return output;
 	},
 	
+	copyHashRemoveProto: function(hash) {
+		// shallow copy hash, but remove __proto__ and family from copy
+		var output = Object.create(null);
+		for (var key in hash) {
+			output[key] = hash[key];
+		}
+		return output;
+	},
+	
 	mergeHashes: function(a, b) {
 		// shallow-merge keys from a and b into c and return c
 		// b has precedence over a

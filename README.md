@@ -17,6 +17,7 @@
 	* [isaArray](#isaarray)
 	* [copyHash](#copyhash)
 	* [copyHashRemoveKeys](#copyhashremovekeys)
+	* [copyHashRemoveProto](#copyhashremoveproto)
 	* [mergeHashes](#mergehashes)
 	* [mergeHashInto](#mergehashinto)
 	* [parseQueryString](#parsequerystring)
@@ -282,6 +283,19 @@ This function performs a shallow copy of the specified hash, and returns the cop
 var my_hash = { foo: "bar", baz: 12345 };
 var omit_these = { baz: true };
 var my_copy = Tools.copyHashRemoveKeys( my_hash, omit_these );
+```
+
+## copyHashRemoveProto
+
+```
+OBJECT copyHashRemoveProto( OBJECT )
+```
+
+This function performs a shallow copy of the specified hash, and returns the copy, but ensures that the copy is a "pure" object with no prototype, constructor, or any of the special properties that all standard Objects implicitly have.
+
+```javascript
+var my_hash = { foo: "bar", baz: 12345 };
+var clean_copy = Tools.copyHashRemoveProto( my_hash );
 ```
 
 ## mergeHashes
