@@ -3,6 +3,7 @@
 // Released under the MIT License
 
 var fs = require('fs');
+var Path = require('path');
 var cp = require('child_process');
 var crypto = require('crypto');
 var ErrNo = require('errno');
@@ -911,6 +912,104 @@ module.exports = {
 		if (!algo) algo = 'Linear';
 		amount = this.clamp( amount, 0.0, 1.0 );
 		return start + (EASE_MODES[mode]( amount, algo ) * (end - start));
+	},
+	
+	findFiles: function(dir, opts, callback) {
+		// find all files matching filespec, optionally recurse into subdirs
+		// opts: { filespec, recurse, all (dotfiles), filter }
+		var files = [];
+		
+		if (!callback) { callback = opts; opts = {}; }
+		if (!opts) opts = {};
+		if (!opts.filespec) opts.filespec = /.+/;
+		else if (typeof(opts.filespec) == 'string') opts.filespec = new RegExp(opts.filespec);
+		if (!("recurse" in opts)) opts.recurse = true;
+		
+		this.walkDir( dir,
+			function(file, stats, callback) {
+				var filename = Path.basename(file);
+				if (!opts.all && filename.match(/^\./)) return callback(false); // skip dotfiles
+				
+				if (stats.isDirectory()) return callback( opts.recurse );
+				else {
+					if (filename.match( opts.filespec )) {
+						if (opts.filter && (opts.filter(file, stats) === false)) return callback(false); // user skip
+						else files.push(file);
+					}
+				}
+				callback();
+			},
+			function(err) {
+				callback(err, files);
+			}
+		); // walkDir
+	},
+	
+	walkDir: function(dir, iterator, callback) {
+		// walk directory tree, fire iterator for every file, then callback at end
+		// iterator is passed: (path, stats, callback)
+		// pass false to iterator callback to prevent descending into a dir
+		var self = this;
+		
+		fs.readdir(dir, function(err, files) {
+			if (err) return callback(err);
+			if (!files || !files.length) return callback();
+			
+			self.async.eachSeries( files,
+				function(filename, callback) {
+					var file = Path.join( dir, filename );
+					fs.stat( file, function(err, stats) {
+						if (err) {
+							return callback(err);
+						}
+						iterator( file, stats, function(cont) {
+							// recurse for dir
+							if (stats.isDirectory() && (cont !== false)) {
+								self.walkDir( file, iterator, callback );
+							}
+							else callback();
+						} );
+					} );
+				}, callback
+			); // eachSeries
+		} ); // fs.readdir
+	},
+	
+	writeFileAtomic: function(file, data, opts, callback) {
+		// write a file atomically
+		var temp_file = file + '.tmp.' + this.generateShortID();
+		if (!callback) {
+			// opts is optional
+			callback = opts;
+			opts = {};
+		}
+		fs.writeFile( temp_file, data, opts, function(err) {
+			if (err) return callback(err);
+			
+			fs.rename( temp_file, file, function(err) {
+				if (err) {
+					// cleanup temp file before returning
+					fs.unlink( temp_file, function() { callback(err); } );
+				}
+				else callback();
+			});
+		}); // fs.writeFile
+	},
+	
+	writeFileAtomicSync: function(file, data, opts) {
+		// write a file atomically and synchronously
+		var temp_file = file + '.tmp.' + this.generateShortID();
+		if (!opts) opts = {};
+		
+		fs.writeFileSync( temp_file, data, opts );
+		try {
+			fs.renameSync( temp_file, file );
+		}
+		catch (err) {
+			// try to cleanup temp file before throwing
+			fs.unlinkSync( temp_file );
+			throw err;
+		}
 	}
 	
 };

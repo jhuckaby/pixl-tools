@@ -56,6 +56,10 @@
 	* [fileEachLine](#fileeachline)
 	* [getpwnam](#getpwnam)
 	* [tween](#tween)
+	* [findFiles](#findfiles)
+	* [walkDir](#walkdir)
+	* [writeFileAtomic](#writefileatomic)
+	* [writeFileAtomicSync](#writefileatomicsync)
 - [License](#license)
 
 </details>
@@ -1018,11 +1022,116 @@ Here is a more detailed list of the function arguments:
 | `MODE` | The animation mode as string, one of `EaseIn`, `EaseOut` or `EaseInOut`. |
 | `ALGORITHM` | The algorithm name as string, one of `Linear`, `Quadratic`, `Cubic`, `Quartetic`, `Quintic`, `Sine` or `Circular`. |
 
+## findFiles
+
+```
+VOID findFiles( DIR, [OPTS], CALLBACK )
+```
+
+The `findFiles()` function will recursively scan for files on the filesystem, and can include several filters for customization.  You need to specify a starting directory path, an object containing options (see below), and a callback to receive the list of files.  Your callback will be called with two arguments: an error if any, and an array of files.  The options object can include:
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `filespec` | RegExp / String | An optional regular expression or string to match against filenames (not paths).  Defaults to `/.+/`. |
+| `recurse` | Boolean | Recurse into nested subdirectories, defaults to `true`.  Set this to `false` to only scan the outermost directory. |
+| `all` | Boolean | Normally, dotfiles are skipped.  When this is set to `true`, dotfiles will be included (unless filtered out by `filespec`). |
+| `filter` | Function | Optional custom filter function, called for each file.  See example below for usage. |
+
+Here is a simple example that finds all image files:
+
+```js
+Tools.findFiles( "/path/to/starting/dir", {
+	filespec: /\.(jpg|png|gif)$/i
+},
+function(err, files) {
+	console.log("All the images: ", files);
+});
+```
+
+Here is an example of using a custom filter function:
+
+```js
+Tools.findFiles( "/path/to/starting/dir", {
+	filter: function(file, stats) {
+		return stats.size <= 32768; // only include files 32K or less
+	}
+},
+function(err, files) {
+	console.log("All files 32K or less: ", files);
+});
+```
+
+If you just want all the files, you can omit the options object:
+
+```js
+Tools.findFiles( "/path/to/starting/dir", function(err, files) {
+	console.log("All the files: ", files);
+});
+```
+
+Please note that this function specifically returns *files*, not directories.  For more low-level control over this process, see [walkDir()](#walkdir) below, which this uses internally.
+
+## walkDir
+
+```
+VOID walkDir( DIR, ITERATOR, CALLBACK )
+```
+
+The `walkDir()` function recursively walks a directory on the filesystem, including all subdirectories, and it fires a custom iterator function for each file or directory encountered.  Your iterator function is passed the file path, an [fs.Stats](https://nodejs.org/api/fs.html#fs_class_fs_stats) object, and a callback.  It needs to fire the callback function, and pass `true` to recurse for directories, or `false` to skip it.  When the full directory tree is walked, the final callback is fired.  Example:
+
+```js
+Tools.walkDir( "/path/to/starting/dir",
+	function(file, stats, callback) {
+		// called for each file and directory
+		if (stats.isDirectory()) callback(true); // recurse into
+		else {
+			console.log("Found file: " + file);
+			callback();
+		}
+	},
+	function() {
+		// all done!
+		console.log("Walk complete!");
+	}
+);
+```
+
+## writeFileAtomic
+
+```
+VOID writeFileAtomic( FILE, DATA, OPTS, CALLBACK )
+```
+
+This function writes a file *atomically*.  That is, it writes to a temp file first, and then renames that file atop the original.  This ensures that no corruption can occur with multiple threads or processes writing to the same file at the same time.  In this case the latter prevails.  The temp file is created in the same directory to ensure the same filesystem (cross-FS renames are **not** atomic), and is named with a `.tmp.[UNIQUE]` file extension.  It accepts the same arguments as [fs.writeFile()](https://nodejs.org/api/fs.html#fs_fs_writefile_file_data_options_callback).  Example:
+
+```js
+Tools.writeFileAtomic( "/path/to/my/file.json", data, function(err) {
+	if (err) throw err;
+});
+```
+
+## writeFileAtomicSync
+
+```
+VOID writeFileAtomicSync( FILE, DATA, OPTS )
+```
+
+This function writes a file *atomically* and synchronously.  That is, it writes to a temp file first, and then renames that file atop the original.  This ensures that no corruption can occur with multiple threads or processes writing to the same file at the same time.  In this case the latter prevails.  The temp file is created in the same directory to ensure the same filesystem (cross-FS renames are **not** atomic), and is named with a `.tmp.[UNIQUE]` file extension.  It accepts the same arguments as [fs.writeFileSync()](https://nodejs.org/api/fs.html#fs_fs_writefilesync_file_data_options).  Example:
+
+```js
+try {
+	Tools.writeFileAtomicSync( "/path/to/my/file.json", data );
+}
+catch (err) {
+	throw err;
+}
+```
+
 # License
 
 **The MIT License**
 
-*Copyright (c) 2015 - 2019 Joseph Huckaby.*
+*Copyright (c) 2015 - 2020 Joseph Huckaby.*
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
