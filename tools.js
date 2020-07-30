@@ -43,7 +43,6 @@ var EASE_MODES = {
 module.exports = {
 	
 	"async": require('async'),
-	"mkdirp": require('mkdirp'),
 	"glob": require('glob'),
 	"rimraf": require('rimraf'),
 	
@@ -1012,4 +1011,23 @@ module.exports = {
 		}
 	}
 	
+}; // module.exports
+
+// Replace old npm mkdirp with native implementation (Node v10+)
+module.exports.mkdirp = function(path, opts, callback) {
+	if (!callback) {
+		callback = opts;
+		opts = null;
+	}
+	if (!opts) opts = { mode: 0o777 };
+	if (typeof(opts) == 'number') opts = { mode: opts };
+	opts.recursive = true;
+	fs.mkdir( path, opts, callback );
+};
+
+module.exports.mkdirp.sync = function(path, opts) {
+	if (!opts) opts = { mode: 0o777 };
+	if (typeof(opts) == 'number') opts = { mode: opts };
+	opts.recursive = true;
+	return fs.mkdirSync( path, opts );
 };
