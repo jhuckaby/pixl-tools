@@ -1009,6 +1009,36 @@ module.exports = {
 			fs.unlinkSync( temp_file );
 			throw err;
 		}
+	},
+	
+	parseJSON: function(text) {
+		// parse JSON with improved error messages (i.e. line numbers)
+		text = text.toString().replace(/\r\n/g, "\n"); // Unix line endings
+		var json = null;
+		try { json = JSON.parse(text); }
+		catch (err) {
+			var lines = text.split(/\n/).map( function(line) { return line + "\n"; } );
+			var err_msg = (err.message || err.toString()).replace(/\bat\s+position\s+(\d+)/, function(m_all, m_g1) {
+				var pos = parseInt(m_g1);
+				var offset = 0;
+				var loc = null;
+				for (var idx = 0, len = lines.length; idx < len; idx++) {
+					offset += lines[idx].length;
+					if (offset >= pos) {
+						loc = { line: idx + 1 };
+						offset -= lines[idx].length;
+						loc.column = (pos - offset) + 1;
+						idx = len;
+					}
+				}
+				if (loc) {
+					return "on line " + loc.line + " column " + loc.column;
+				}
+				else return m_all;
+			});
+			throw new Error(err_msg);
+		}
+		return json;
 	}
 	
 }; // module.exports

@@ -60,6 +60,7 @@
 	* [walkDir](#walkdir)
 	* [writeFileAtomic](#writefileatomic)
 	* [writeFileAtomicSync](#writefileatomicsync)
+	* [parseJSON](#parsejson)
 - [License](#license)
 
 </details>
@@ -1125,6 +1126,24 @@ try {
 catch (err) {
 	throw err;
 }
+```
+
+## parseJSON
+
+```
+OBJECT parseJSON( TEXT )
+```
+
+This function is a wrapper around the built-in `JSON.parse()`.  It works in exactly the same way, except that it throws improved error messages in the event of parser errors.  Specifically, it specifies the exact line number and column of the error in the source JSON.  This is mainly useful for multi-line (i.e. pretty-printed) JSON files.  Here is an example:
+
+```js
+var bad_json = `{
+	"good_property_name": 12345,
+	bad_missing_quotes: 67890
+}`;
+
+var obj = Tools.parseJSON(bad_json);
+// Error: Unexpected token b in JSON on line 3 column 2
 ```
 
 # License
