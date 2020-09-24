@@ -976,7 +976,7 @@ module.exports = {
 	
 	writeFileAtomic: function(file, data, opts, callback) {
 		// write a file atomically
-		var temp_file = file + '.tmp.' + this.generateShortID();
+		var temp_file = file + '.tmp.' + process.pid + '.' + this.generateShortID();
 		if (!callback) {
 			// opts is optional
 			callback = opts;
@@ -997,7 +997,7 @@ module.exports = {
 	
 	writeFileAtomicSync: function(file, data, opts) {
 		// write a file atomically and synchronously
-		var temp_file = file + '.tmp.' + this.generateShortID();
+		var temp_file = file + '.tmp.' + process.pid + '.' + this.generateShortID();
 		if (!opts) opts = {};
 		
 		fs.writeFileSync( temp_file, data, opts );
