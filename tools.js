@@ -1,28 +1,28 @@
 // Misc Tools for Node.js
-// Copyright (c) 2015 - 2019 Joseph Huckaby
+// Copyright (c) 2015 - 2021 Joseph Huckaby
 // Released under the MIT License
 
-var fs = require('fs');
-var Path = require('path');
-var cp = require('child_process');
-var crypto = require('crypto');
-var ErrNo = require('errno');
-var os = require('os');
-var hostname = os.hostname();
+const fs = require('fs');
+const Path = require('path');
+const cp = require('child_process');
+const crypto = require('crypto');
+const ErrNo = require('errno');
+const os = require('os');
+const hostname = os.hostname();
 
-var MONTH_NAMES = [ 
+const MONTH_NAMES = [ 
 	'January', 'February', 'March', 'April', 'May', 'June', 
 	'July', 'August', 'September', 'October', 'November', 'December' ];
 
-var SHORT_MONTH_NAMES = [ 'Jan', 'Feb', 'Mar', 'Apr', 'May', 
+const SHORT_MONTH_NAMES = [ 'Jan', 'Feb', 'Mar', 'Apr', 'May', 
 	'June', 'July', 'Aug', 'Sept', 'Oct', 'Nov', 'Dec' ];
 
-var DAY_NAMES = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 
+const DAY_NAMES = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 
 	'Thursday', 'Friday', 'Saturday'];
 	
-var SHORT_DAY_NAMES = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+const SHORT_DAY_NAMES = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
-var EASE_ALGOS = {
+const EASE_ALGOS = {
 	Linear: function(_amount) { return _amount; },
 	Quadratic: function(_amount) { return Math.pow(_amount, 2); },
 	Cubic: function(_amount) { return Math.pow(_amount, 3); },
@@ -32,13 +32,15 @@ var EASE_ALGOS = {
 	Circular: function(_amount) { return 1 - Math.sin(Math.acos(_amount)); }
 };
 
-var EASE_MODES = {
+const EASE_MODES = {
 	EaseIn: function(_amount, _algo) { return EASE_ALGOS[_algo](_amount); },
 	EaseOut: function(_amount, _algo) { return 1 - EASE_ALGOS[_algo](1 - _amount); },
 	EaseInOut: function(_amount, _algo) {
 		return (_amount <= 0.5) ? EASE_ALGOS[_algo](2 * _amount) / 2 : (2 - EASE_ALGOS[_algo](2 * (1 - _amount))) / 2;
 	}
 };
+
+const BIN_DIRS = ['/usr/local/bin', '/usr/bin', '/bin', '/usr/sbin', '/sbin'];
 
 module.exports = {
 	
@@ -1039,6 +1041,45 @@ module.exports = {
 			throw new Error(err_msg);
 		}
 		return json;
+	},
+	
+	findBin: function(bin, callback) {
+		// locate binary executable using PATH and known set of common dirs
+		var dirs = (process.env.PATH || '').split(/\:/).concat(BIN_DIRS).filter( function(item) {
+			return item.match(/\S/);
+		} );
+		var found = false;
+		
+		this.async.eachSeries( dirs,
+			function(dir, callback) {
+				var file = Path.join(dir, bin);
+				fs.stat( file, function(err, stats) {
+					if (!err && stats) {
+						found = file;
+						return callback("ABORT");
+					}
+					callback();
+				} ); // fs.stat
+			},
+			function() {
+				if (found) callback( false, found );
+				else callback( new Error("Binary executable not found: " + bin) );
+			}
+		); // eachSeries
+	},
+	
+	findBinSync: function(bin) {
+		// locate binary executable using PATH and known set of common dirs
+		var dirs = (process.env.PATH || '').split(/\:/).concat(BIN_DIRS).filter( function(item) {
+			return item.match(/\S/);
+		} );
+		
+		for (var idx = 0, len = dirs.length; idx < len; idx++) {
+			var file = Path.join(dirs[idx], bin);
+			if (fs.existsSync(file)) return file;
+		}
+		
+		return false;
 	}
 	
 }; // module.exports

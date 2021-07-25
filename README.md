@@ -61,6 +61,8 @@
 	* [writeFileAtomic](#writefileatomic)
 	* [writeFileAtomicSync](#writefileatomicsync)
 	* [parseJSON](#parsejson)
+	* [findBin](#findbin)
+	* [findBinSync](#findbinsync)
 - [License](#license)
 
 </details>
@@ -1146,11 +1148,34 @@ var obj = Tools.parseJSON(bad_json);
 // Error: Unexpected token b in JSON on line 3 column 2
 ```
 
+## findBin
+
+```
+VOID findBin( FILENAME, CALLBACK )
+```
+
+This function locates the path to a binary executable given a filename and a callback.  It searches all directories in the current environment `PATH`, as well as a number of known common locations (`/usr/local/bin`, `/usr/bin`, `/bin`, `/usr/sbin`, and `/sbin`).  Your callback is invoked with an error (or `false` on success), and the path to the first binary executable found.  Example use:
+
+```js
+Tools.findBin( 'lsof', function(err, file) {
+	if (err) throw err;
+	console.log("Found: " + file);
+} );
+```
+
+## findBinSync
+
+```
+STRING findBinSync( FILENAME )
+```
+
+A synchronous version of [findBin](#findbin).  This returns the binary path, or `false` if none was found.  It will not throw.
+
 # License
 
 **The MIT License**
 
-*Copyright (c) 2015 - 2020 Joseph Huckaby.*
+*Copyright (c) 2015 - 2021 Joseph Huckaby.*
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
