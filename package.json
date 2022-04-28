@@ -1,6 +1,6 @@
 {
   "name": "pixl-tools",
-  "version": "1.0.30",
+  "version": "1.0.31",
   "description": "A set of miscellaneous utility functions for Node.js.",
   "author": "Joseph Huckaby <jhuckaby@gmail.com>",
   "homepage": "https://github.com/jhuckaby/pixl-tools",
@@ -20,7 +20,7 @@
   ],
   "dependencies": {
     "errno": "0.1.7",
-    "async": "2.6.1",
+    "async": "2.6.4",
     "glob": "5.0.15",
     "rimraf": "2.6.3"
   },
