@@ -382,10 +382,10 @@ module.exports = {
 	
 	setPath: function(target, path, value) {
 		// set path using dir/slash/syntax or dot.path.syntax
-		// preserve dots and slashes if escaped
-		var parts = path.replace(/\\\./g, '__PXDOT__').replace(/\\\//g, '__PXSLASH__').split(/[\.\/]/).map( function(elem) {
+		// support inline dots and slashes if backslash-escaped
+		var parts = (path.indexOf("\\") > -1) ? path.replace(/\\\./g, '__PXDOT__').replace(/\\\//g, '__PXSLASH__').split(/[\.\/]/).map( function(elem) {
 			return elem.replace(/__PXDOT__/g, '.').replace(/__PXSLASH__/g, '/');
-		} );
+		} ) : path.split(/[\.\/]/);
 		
 		var key = parts.pop();
 		
@@ -411,10 +411,10 @@ module.exports = {
 	
 	getPath: function(target, path) {
 		// get path using dir/slash/syntax or dot.path.syntax
-		// preserve dots and slashes if escaped
-		var parts = path.replace(/\\\./g, '__PXDOT__').replace(/\\\//g, '__PXSLASH__').split(/[\.\/]/).map( function(elem) {
+		// support inline dots and slashes if backslash-escaped
+		var parts = (path.indexOf("\\") > -1) ? path.replace(/\\\./g, '__PXDOT__').replace(/\\\//g, '__PXSLASH__').split(/[\.\/]/).map( function(elem) {
 			return elem.replace(/__PXDOT__/g, '.').replace(/__PXSLASH__/g, '/');
-		} );
+		} ) : path.split(/[\.\/]/);
 		
 		var key = parts.pop();
 		
