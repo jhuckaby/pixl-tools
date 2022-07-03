@@ -312,7 +312,7 @@ module.exports = {
 		return obj;
 	},
 	
-	sub: function(text, args, fatal) {
+	sub: function(text, args, fatal, fallback) {
 		// perform simple [placeholder] substitution using supplied
 		// args object and return transformed text
 		var self = this;
@@ -326,7 +326,7 @@ module.exports = {
 			value = self.getPath(args, name);
 			if (value === undefined) {
 				result = false;
-				return m_all;
+				return fallback || m_all;
 			}
 			else return value;
 		} );
@@ -1080,6 +1080,30 @@ module.exports = {
 		}
 		
 		return false;
+	},
+	
+	sortBy: function(orig, key, opts) {
+		// sort array of objects by key, asc or desc, and optionally return NEW array
+		// opts: { dir, type, copy }
+		if (!opts) opts = {};
+		if (!opts.dir) opts.dir = 1;
+		if (!opts.type) opts.type = 'string';
+		
+		var arr = opts.copy ? Array.from(orig) : orig;
+		
+		arr.sort( function(a, b) {
+			switch(opts.type) {
+				case 'string':
+					return( (''+a[key]).localeCompare(b[key]) * opts.dir );
+				break;
+				
+				case 'number':
+					return (a[key] - b[key]) * opts.dir;
+				break;
+			}
+		} );
+		
+		return arr;
 	}
 	
 }; // module.exports

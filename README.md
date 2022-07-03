@@ -1171,11 +1171,38 @@ STRING findBinSync( FILENAME )
 
 A synchronous version of [findBin](#findbin).  This returns the binary path, or `false` if none was found.  It will not throw.
 
+## sortBy
+
+```
+ARRAY sortBy( ARRAY, KEY, OPTS )
+```
+
+This function sorts an array of objects by a specific named property inside each object.  The options object may include the following:
+
+| Property Name | Type | Description |
+|---------------|------|-------------|
+| `type` | String | Specify a numerical (`number`) or locale-aware string (`string`) sort.  The default is `string`. |
+| `dir` | Number | Specify an ascending (`1`) or descending (`-1`) sort direction.  The default is ascending (`1`). |
+| `copy` | Boolean | Set this to `true` to return a shallow copy of the sorted array (and don't touch the original).  The default (`false`) is to sort the original array in place. |
+
+Here is an example:
+
+```js
+var list = [
+	{ username: 'joe', date: 1654987195.435 },
+	{ username: 'fred', date: 1473634873 },
+	{ username: 'nancy', date: 1883476393.2 },
+	{ username: 'jane', date: 1289898989 },
+];
+
+var sorted = Tools.sortBy( list, "date", { type: "number", dir: 1, copy: true } );
+```
+
 # License
 
 **The MIT License**
 
-*Copyright (c) 2015 - 2021 Joseph Huckaby.*
+*Copyright (c) 2015 - 2022 Joseph Huckaby.*
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
