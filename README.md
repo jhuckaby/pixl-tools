@@ -572,6 +572,27 @@ var file = Tools.getPath( tree, "folder1.folder2.file2" );
 
 For walking into arrays, simply provide the index number of the element you want.
 
+## deletePath
+
+```
+BOOLEAN deletePath( OBJECT, PATH )
+```
+
+This function will delete a property value inside a hash/array tree, by first traversing a directory-style path.  You can use either `dir/slash/syntax` or `dot.path.syntax`.  Returns `true` on success or `false` on failure.
+
+```js
+var tree = {
+	folder1: {
+		file1: "foo",
+		file2: "bar"
+	}
+};
+
+Tools.deletePath( tree, "folder1/file1" );
+```
+
+For walking through arrays, simply provide the index number of the element you want.  However, note that the final element in your path should not be an array index, as that cannot be deleted using this API.
+
 ## getDateArgs
 
 ```

@@ -409,6 +409,35 @@ module.exports = {
 		return true;
 	},
 	
+	deletePath: function(target, path) {
+		// delete path using dir/slash/syntax or dot.path.syntax
+		// support inline dots and slashes if backslash-escaped
+		var parts = (path.indexOf("\\") > -1) ? path.replace(/\\\./g, '__PXDOT__').replace(/\\\//g, '__PXSLASH__').split(/[\.\/]/).map( function(elem) {
+			return elem.replace(/__PXDOT__/g, '.').replace(/__PXSLASH__/g, '/');
+		} ) : path.split(/[\.\/]/);
+		
+		var key = parts.pop();
+		
+		// traverse path
+		while (parts.length) {
+			var part = parts.shift();
+			if (part) {
+				if (!(part in target)) {
+					// path runs into non-existent object
+					return false;
+				}
+				if (typeof(target[part]) != 'object') {
+					// path runs into non-object
+					return false;
+				}
+				target = target[part];
+			}
+		}
+		
+		delete target[key];
+		return true;
+	},
+	
 	getPath: function(target, path) {
 		// get path using dir/slash/syntax or dot.path.syntax
 		// support inline dots and slashes if backslash-escaped
@@ -735,8 +764,8 @@ module.exports = {
 		var lines = [];
 		
 		while ((idx = buf.indexOf(chunk)) > -1) {
-			lines.push( buf.slice(0, idx) );
-			buf = buf.slice( idx + chunk.length, buf.length );
+			lines.push( buf.subarray(0, idx) );
+			buf = buf.subarray( idx + chunk.length, buf.length );
 		}
 		
 		lines.push(buf);
@@ -792,7 +821,7 @@ module.exports = {
 					return callback(err);
 				}
 				var eof = (num_bytes != opts.buffer_size);
-				var data = chunk.slice(0, num_bytes);
+				var data = chunk.subarray(0, num_bytes);
 				
 				if (lastChunk && lastChunk.length) {
 					data = Buffer.concat([lastChunk, data], lastChunk.length + data.length);
@@ -804,7 +833,7 @@ module.exports = {
 					
 					// see if data ends on EOL -- if not, we have a partial block
 					// fill buffer for next read (unless at EOF)
-					if (data.slice(0 - opts.eol.length).toString() == opts.eol) {
+					if (data.subarray(0 - opts.eol.length).toString() == opts.eol) {
 						lines.pop(); // remove empty line caused by split
 					}
 					else if (!eof) {
