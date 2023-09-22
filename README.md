@@ -1001,7 +1001,7 @@ Tools.fileEachLine( "my_large_spreadsheet.csv",
 OBJECT getpwnam( USERNAME, [USE_CACHE] )
 ```
 
-This function fetches local user account information, give a username or numerical UID.  This is similar to the POSIX [getpwnam](http://man7.org/linux/man-pages/man3/getpwnam.3.html) function, which is missing from Node core.  This function works on Linux and OS X only.  It runs in synchronous mode, and returns an object with the following properties, or `null` on error:
+This function fetches local user account information, give a username or numerical UID.  This is similar to the POSIX [getpwnam](http://man7.org/linux/man-pages/man3/getpwnam.3.html) function, which is missing from Node.js core.  This function works on Linux and OS X only.  It runs in synchronous mode, and returns an object with the following properties, or `null` on error:
 
 | Property Name | Sample Value | Description |
 |---------------|---------------|-------------|
@@ -1019,6 +1019,28 @@ If you pass `true` as the 2nd argument, the user information will be cached in R
 var info = Tools.getpwnam( "jhuckaby", true );
 if (info) {
 	process.chdir( info.dir );
+}
+```
+
+## getgrnam
+
+```
+OBJECT getgrnam( GROUP, [USE_CACHE] )
+```
+
+This function fetches local group account information, give a name or numerical GID.  This is similar to the POSIX [getgrnam](http://man7.org/linux/man-pages/man3/getgrnam.3.html) function, which is missing from Node.js core.  This function works on Linux and OS X only.  It runs in synchronous mode, and returns an object with the following properties, or `null` on error:
+
+| Property Name | Sample Value | Description |
+|---------------|---------------|-------------|
+| `name` | `games` | The name of the group. |
+| `gid` | `20` | The numeric GID (Group ID) of the group. |
+
+If you pass `true` as the 2nd argument, the group information will be cached in RAM for future queries on the same name or GID.  Example use:
+
+```js
+var info = Tools.getgrnam( "games", true );
+if (info) {
+	console.log( "GID: ", info.gid );
 }
 ```
 

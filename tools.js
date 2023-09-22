@@ -50,6 +50,7 @@ module.exports = {
 	
 	hostname: hostname,
 	user_cache: {},
+	group_cache: {},
 	
 	timeNow: function(floor) {
 		// return current epoch time
@@ -862,7 +863,7 @@ module.exports = {
 	},
 	
 	getpwnam: function(username, use_cache) {
-		// Simulate POSIX getpwnam by querying /etc/passwd on linux, or /usr/bin/id on darwin / OSX.
+		// Simulate POSIX getpwnam by querying getent on linux, or /usr/bin/id on darwin / OSX.
 		// Accepts username or uid, and can optionally cache results for repeat queries for same user.
 		// Response keys: username, password, uid, gid, name, dir, shell
 		var user = null;
@@ -872,12 +873,13 @@ module.exports = {
 		}
 		
 		if (process.platform === 'linux') {
-			// use /etc/passwd on linux
-			var lines = null;
+			// use getent on linux
 			var cols = null;
-			//try { lines = fs.readFileSync('/etc/passwd', 'utf8').trim().split(/\n/); }
-			var opts = { timeout: 1000, encoding: 'utf8', stdio: 'pipe' };
-			try { cols = cp.execSync('/usr/bin/getent passwd ' + username, opts).trim().split(':'); }
+			var getent = this.findBinSync('getent');
+			if (!getent) return null; // no getent!
+			
+			var opts = { timeout: 1000, encoding: 'utf8' };
+			try { cols = cp.execSync(getent + ' passwd ' + username, opts).trim().split(':'); }
 			catch (err) { return null; }
 			
 			if ((username == cols[0]) || (username == Number(cols[2]))) {
@@ -931,6 +933,72 @@ module.exports = {
 		}
 		else {
 			return user;
+		}
+	},
+	
+	getgrnam: function(name, use_cache) {
+		// Simulate POSIX getgrnam by querying getent on linux, or /etc/group on darwin / OSX.
+		// Accepts group name or gid, and can optionally cache results for repeat queries for same group.
+		// Response keys: name, gid
+		var group = null;
+		
+		if (use_cache && this.group_cache[name]) {
+			return this.copyHash( this.group_cache[name] );
+		}
+		
+		if (process.platform === 'linux') {
+			// use getent on linux
+			var lines = null;
+			var cols = null;
+			
+			var getent = this.findBinSync('getent');
+			if (!getent) return null; // no getent!
+			
+			var opts = { timeout: 1000, encoding: 'utf8' };
+			try { cols = cp.execSync(getent + ' group ' + name, opts).trim().split(':'); }
+			catch (err) { return null; }
+			
+			if ((name == cols[0]) || (name == Number(cols[2]))) {
+				group = {
+					name: cols[0],
+					gid: Number(cols[2])
+				};
+			}
+			else {
+				// group not found
+				return null;
+			}
+		}
+		else if (process.platform === 'darwin') {
+			// use /etc/group on darwin / OSX
+			if (!fs.existsSync('/etc/group')) return null; // no /etc/group!
+			var lines = fs.readFileSync('/etc/group', 'utf8').trim().split(/\n/);
+			
+			for (var idx = 0, len = lines.length; idx < len; idx++) {
+				var cols = lines[idx].split(':');
+				if ((name == cols[0]) || (name == Number(cols[2]))) {
+					group = {
+						name: cols[0],
+						gid: Number(cols[2])
+					};
+					idx = len;
+				}
+			}
+			
+			return group;
+		}
+		else {
+			// unsupported platform
+			return null;
+		}
+		
+		if (use_cache) {
+			this.group_cache[ group.name ] = group;
+			this.group_cache[ group.gid ] = group;
+			return this.copyHash( group );
+		}
+		else {
+			return group;
 		}
 	},
 	
