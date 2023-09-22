@@ -32,6 +32,7 @@
 	* [sub](#sub)
 	* [setPath](#setpath)
 	* [getPath](#getpath)
+	* [deletePath](#deletepath)
 	* [getDateArgs](#getdateargs)
 	* [getTimeFromArgs](#gettimefromargs)
 	* [normalizeTime](#normalizetime)
@@ -55,6 +56,7 @@
 	* [bufferSplit](#buffersplit)
 	* [fileEachLine](#fileeachline)
 	* [getpwnam](#getpwnam)
+	* [getgrnam](#getgrnam)
 	* [tween](#tween)
 	* [findFiles](#findfiles)
 	* [walkDir](#walkdir)
@@ -63,6 +65,7 @@
 	* [parseJSON](#parsejson)
 	* [findBin](#findbin)
 	* [findBinSync](#findbinsync)
+	* [sortBy](#sortby)
 - [License](#license)
 
 </details>
