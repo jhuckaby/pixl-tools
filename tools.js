@@ -77,7 +77,8 @@ module.exports = {
 		return shasum.digest('hex').substring(0, len || 64);
 	},
 	
-	_shortIDCounter: 0,
+	_shortIDCounter: Math.floor( Math.random() * Math.pow(36, 2) ),
+	
 	generateShortID: function(prefix) {
 		// generate short id using high-res server time, and a static counter,
 		// both converted to alphanumeric lower-case (base-36), ends up being ~10 chars.
