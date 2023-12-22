@@ -52,19 +52,19 @@ module.exports = {
 	user_cache: {},
 	group_cache: {},
 	
+	_uniqueIDCounter: 0,
+	_shortIDCounter: Math.floor( Math.random() * Math.pow(36, 2) ),
+	
 	timeNow: function(floor) {
 		// return current epoch time
 		var epoch = (new Date()).getTime() / 1000;
 		return floor ? Math.floor(epoch) : epoch;
 	},
 	
-	_uniqueIDCounter: 0,
-	generateUniqueID: function(len, salt) {
-		// generate unique ID using some readily-available bits of entropy
+	getRandomEntropy(salt) {
+		// get random string using some readily-available bits of entropy
 		this._uniqueIDCounter++;
-		var shasum = crypto.createHash('sha256');
-		
-		shasum.update([
+		return [
 			'SALT_7fb1b7485647b1782c715474fba28fd1',
 			this.timeNow(),
 			Math.random(),
@@ -72,17 +72,25 @@ module.exports = {
 			process.pid,
 			this._uniqueIDCounter,
 			salt || ''
-		].join('-'));
-		
-		return shasum.digest('hex').substring(0, len || 64);
+		].join('-');
 	},
 	
-	_shortIDCounter: Math.floor( Math.random() * Math.pow(36, 2) ),
+	generateUniqueID: function(len, salt) {
+		// generate unique ID using SHA256 and some readily-available bits of entropy
+		return crypto.createHash('sha256').update( this.getRandomEntropy(salt) ).digest('hex').substring(0, len || 64);
+	},
+	
+	generateUniqueBase64: function(bytes, salt) {
+		// generate unique url-safe base64 ID using some readily-available bits of entropy
+		var buf = crypto.createHash('sha256').update( this.getRandomEntropy(salt) ).digest();
+		var output = bytes ? buf.slice(0, bytes).toString('base64') : buf.toString('base64');
+		return output.replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, ''); // url-safe
+	},
 	
 	generateShortID: function(prefix) {
 		// generate short id using high-res server time, and a static counter,
 		// both converted to alphanumeric lower-case (base-36), ends up being ~10 chars.
-		// allows for *up to* 1,296 unique ids per millisecond (sort of).
+		// allows for *up to* 1,296 unique ids per millisecond (give or take).
 		this._shortIDCounter++;
 		if (this._shortIDCounter >= Math.pow(36, 2)) this._shortIDCounter = 0;
 		
@@ -93,11 +101,17 @@ module.exports = {
 		].join('');
 	},
 	
-	digestHex: function(str, algo) {
-		// digest string using SHA256 (by default), return hex hash
-		var shasum = crypto.createHash( algo || 'sha256' );
-		shasum.update( str );
-		return shasum.digest('hex');
+	digestHex: function(str, algo, len) {
+		// digest string using SHA256 (default) or other algo, return hex hash
+		var output = crypto.createHash( algo || 'sha256' ).update( str ).digest('hex');
+		return len ? output.substring(0, len) : output;
+	},
+	
+	digestBase64: function(str, algo, bytes) {
+		// digest string using SHA256 (default) or other algo, return url-safe base64 string
+		var buf = crypto.createHash( algo || 'sha256' ).update( str ).digest();
+		var output = bytes ? buf.slice(0, bytes).toString('base64') : buf.toString('base64');
+		return output.replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, ''); // url-safe
 	},
 	
 	numKeys: function(hash) {

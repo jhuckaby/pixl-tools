@@ -7,8 +7,10 @@
 - [Function List](#function-list)
 	* [timeNow](#timenow)
 	* [generateUniqueID](#generateuniqueid)
+	* [generateUniqueBase64](#generateuniquebase64)
 	* [generateShortID](#generateshortid)
 	* [digestHex](#digesthex)
+	* [digestBase64](#digestbase64)
 	* [numKeys](#numkeys)
 	* [firstKey](#firstkey)
 	* [hashKeysToArray](#hashkeystoarray)
@@ -141,11 +143,37 @@ This function generates a pseudo-random alphanumeric (hexadecimal) ID by combini
 
 ```javascript
 var id = Tools.generateUniqueID();
+// Example: "1ee5de6aae098087d74e79b70a6796400d5b5fb9c8d53581d17cdd560892a14a"
+
 var id = Tools.generateUniqueID( 32 );
-var id = Tools.generateUniqueID( 64, "my extra entropy!" );
+// Example: "507d935eff6fbc502ad1156c728641b6"
+
+var id = Tools.generateUniqueID( 16, "my extra entropy!" );
+// Example: "3b71219d2bfa2b0c"
 ```
 
-Please note that this is *not* designed to be cryptographically secure.  It doesn't use Node's [crypto.randomBytes](http://nodejs.org/api/crypto.html#crypto_crypto_randombytes_size_callback), because generating true random bits takes time, and can block execution.
+Please note that this is *not* designed to be cryptographically secure.  It doesn't use Node's [crypto.randomBytes](http://nodejs.org/api/crypto.html#crypto_crypto_randombytes_size_callback), because generating true random bits takes time, and can block execution.  Instead, it uses things like high-resolution time, a pseudo-random number, a static counter, the server hostname, the current process PID, etc.
+
+## generateUniqueBase64
+
+```
+STRING generateUniqueBase64( BYTES, SALT )
+```
+
+This function generates a pseudo-random URL-safe Base64 ID string by combining various bits of local entropy, and hashing it together with [SHA-256](http://en.wikipedia.org/wiki/SHA-2).  The default digest length is 32 bytes (which results in a ~43 character Base64 string), but you can pass in any lesser byte length to chop it (e.g. 16 or 8).  If you want to add your own entropy, pass it as the 2nd argument.
+
+```javascript
+var id = Tools.generateUniqueBase64();
+// Example: "q7CLMg_FBD9gYDlqPADYtg7VX1VVxOGKn_HgZBE-H54"
+
+var id = Tools.generateUniqueBase64( 16 );
+// Example: "jNEHRduwVcqcijGVAKVZQg"
+
+var id = Tools.generateUniqueBase64( 8, "my extra entropy!" );
+// Example: "YrIjBy5x_sU"
+```
+
+Please note that this is *not* designed to be cryptographically secure.  It doesn't use Node's [crypto.randomBytes](http://nodejs.org/api/crypto.html#crypto_crypto_randombytes_size_callback), because generating true random bits takes time, and can block execution.  Instead, it uses things like high-resolution time, a pseudo-random number, a static counter, the server hostname, the current process PID, etc.
 
 ## generateShortID
 
@@ -157,16 +185,16 @@ This function generates a short, semi-unique pseudo-random alphanumeric ID using
 
 ```js
 var id = Tools.generateShortID('z');
-// --> "zjcdtsls30r"
+// Example: "zjcdtsls30r"
 ```
 
 ## digestHex
 
 ```
-STRING digestHex( PLAINTEXT, [ALGO] )
+STRING digestHex( PLAINTEXT, [ALGO], [LEN] )
 ```
 
-This function is just a simple wrapper around Node's [SHA-256](http://en.wikipedia.org/wiki/SHA-2) or other hashing algorithms.  The default is SHA-256, in which case it returns a 64-character hexadecimal hash of the given string.
+This function is a simple wrapper around Node's [SHA-256](http://en.wikipedia.org/wiki/SHA-2) or other hashing algorithms.  The default is SHA-256, in which case it returns a 64-character hexadecimal hash of the given string.  You can pass a lesser length as the 3rd argument to chop it.
 
 ```javascript
 var sig = Tools.digestHex( "my plaintext string" );
@@ -178,6 +206,33 @@ To specify the algorithm, include it as the second argument.  It should be a str
 ```javascript
 var sig = Tools.digestHex( "my plaintext string", "md5" );
 // --> "659a30fb5d9958326b15c17e8444c123"
+```
+
+## digestBase64
+
+```
+STRING digestBase64( PLAINTEXT, [ALGO], [BYTES] )
+```
+
+This function is a simple wrapper around Node's [SHA-256](http://en.wikipedia.org/wiki/SHA-2) or other hashing algorithms.  The default is SHA-256, in which case it returns a URL-safe Base64 digest of the given string.  The default digest buffer size is 32 bytes (which results in a ~43 character Base64 string), but you can pass a lesser byte length as the 3rd argument to reduce the output length.
+
+```javascript
+var sig = Tools.digestBase64( "my plaintext string" );
+// --> "a0_f1wXQWxGla4wwIAWLZmNZ05Obbto1T1Keutd2lcI"
+```
+
+To specify the algorithm, include it as the second argument.  It should be a string set to `md5`, `sha256`, etc.  On recent releases of OpenSSL, typing `openssl list-message-digest-algorithms` will display the available digest algorithms.  Example (MD5):
+
+```javascript
+var sig = Tools.digestBase64( "my plaintext string", "md5" );
+// --> "ZZow-12ZWDJrFcF-hETBIw"
+```
+
+Here is an example of reducing the digest to only 8 bytes (64 bits), which results in a much shorter Base64 string:
+
+```js
+var sig = Tools.digestBase64( "my plaintext string", "sha256", 8 );
+// --> "a0_f1wXQWxE"
 ```
 
 ## numKeys
