@@ -80,20 +80,20 @@ This module contains a set of miscellaneous utility functions that don't fit int
 
 Use [npm](https://www.npmjs.com/) to install the module:
 
-```
+```sh
 npm install pixl-tools
 ```
 
 Then use `require()` to load it in your code:
 
-```javascript
-var Tools = require('pixl-tools');
+```js
+const Tools = require('pixl-tools');
 ```
 
 Then call the function of your choice:
 
-```javascript
-var id = Tools.generateUniqueID();
+```js
+let id = Tools.generateUniqueID();
 ```
 
 # Module List
@@ -110,10 +110,10 @@ Because I use these three modules so often, I've included them in pixl-tools as 
 Example use:
 
 ```js
-var Tools = require('pixl-tools');
-var async = Tools.async;
-var mkdirp = Tools.mkdirp;
-var glob = Tools.glob;
+const Tools = require('pixl-tools');
+const async = Tools.async;
+const mkdirp = Tools.mkdirp;
+const glob = Tools.glob;
 ```
 
 # Function List
@@ -128,9 +128,9 @@ NUMBER timeNow( FLOOR )
 
 This function returns the current time expressed as [Epoch Seconds](http://en.wikipedia.org/wiki/Unix_time).  Pass `true` if you want the value floored to the nearest integer.
 
-```javascript
-var epoch = Tools.timeNow();
-var floored = Tools.timeNow(true);
+```js
+let epoch = Tools.timeNow();
+let floored = Tools.timeNow(true);
 ```
 
 ## generateUniqueID
@@ -141,14 +141,14 @@ STRING generateUniqueID( LENGTH, SALT )
 
 This function generates a pseudo-random alphanumeric (hexadecimal) ID by combining various bits of local entropy, and hashing it together with [SHA-256](http://en.wikipedia.org/wiki/SHA-2).  The default length is 64 characters, but you can pass in any lesser length to chop it.  If you want to add your own entropy, pass it as the 2nd argument.
 
-```javascript
-var id = Tools.generateUniqueID();
+```js
+let id = Tools.generateUniqueID();
 // Example: "1ee5de6aae098087d74e79b70a6796400d5b5fb9c8d53581d17cdd560892a14a"
 
-var id = Tools.generateUniqueID( 32 );
+let id = Tools.generateUniqueID( 32 );
 // Example: "507d935eff6fbc502ad1156c728641b6"
 
-var id = Tools.generateUniqueID( 16, "my extra entropy!" );
+let id = Tools.generateUniqueID( 16, "my extra entropy!" );
 // Example: "3b71219d2bfa2b0c"
 ```
 
@@ -162,18 +162,18 @@ STRING generateUniqueBase64( BYTES, SALT )
 
 This function generates a pseudo-random URL-safe Base64 ID string by combining various bits of local entropy, and hashing it together with [SHA-256](http://en.wikipedia.org/wiki/SHA-2).  The default digest length is 32 bytes (which results in a ~43 character Base64 string), but you can pass in any lesser byte length to chop it (e.g. 16 or 8).  If you want to add your own entropy, pass it as the 2nd argument.
 
-```javascript
-var id = Tools.generateUniqueBase64();
+```js
+let id = Tools.generateUniqueBase64();
 // Example: "q7CLMg_FBD9gYDlqPADYtg7VX1VVxOGKn_HgZBE-H54"
 
-var id = Tools.generateUniqueBase64( 16 );
+let id = Tools.generateUniqueBase64( 16 );
 // Example: "jNEHRduwVcqcijGVAKVZQg"
 
-var id = Tools.generateUniqueBase64( 8, "my extra entropy!" );
+let id = Tools.generateUniqueBase64( 8, "my extra entropy!" );
 // Example: "YrIjBy5x_sU"
 ```
 
-Please note that this is *not* designed to be cryptographically secure.  It doesn't use Node's [crypto.randomBytes](http://nodejs.org/api/crypto.html#crypto_crypto_randombytes_size_callback), because generating true random bits takes time, and can block execution.  Instead, it uses things like high-resolution time, a pseudo-random number, a static counter, the server hostname, the current process PID, etc.
+Please note that this is *not* designed to be cryptographically secure.  It doesn't use Node's [crypto.randomBytes](https://nodejs.org/api/crypto.html#cryptorandombytessize-callback), because generating true random bits takes time, and can block execution.  Instead, it uses things like high-resolution time, a pseudo-random number, a static counter, the server hostname, the current process PID, etc.
 
 ## generateShortID
 
@@ -184,7 +184,7 @@ STRING generateShortID( PREFIX )
 This function generates a short, semi-unique pseudo-random alphanumeric ID using high-resolution server time, and a static counter.  Both values are converted to [Base-36](https://en.wikipedia.org/wiki/Base36) (lower-case alphanumeric encoding), and combined to produce a 10-12 character ID, plus an optional string prefix if provided.  This algorithm allows for *up to* 1,296 unique IDs per millisecond, but due to server clock adjustments (NTP) this could theoretically collide with itself.  Use with caution.  Example:
 
 ```js
-var id = Tools.generateShortID('z');
+let id = Tools.generateShortID('z');
 // Example: "zjcdtsls30r"
 ```
 
@@ -196,15 +196,15 @@ STRING digestHex( PLAINTEXT, [ALGO], [LEN] )
 
 This function is a simple wrapper around Node's [SHA-256](http://en.wikipedia.org/wiki/SHA-2) or other hashing algorithms.  The default is SHA-256, in which case it returns a 64-character hexadecimal hash of the given string.  You can pass a lesser length as the 3rd argument to chop it.
 
-```javascript
-var sig = Tools.digestHex( "my plaintext string" );
+```js
+let sig = Tools.digestHex( "my plaintext string" );
 // --> "6b4fdfd705d05b11a56b8c3020058b666359d3939b6eda354f529ebad77695c2"
 ```
 
 To specify the algorithm, include it as the second argument.  It should be a string set to `md5`, `sha256`, etc.  On recent releases of OpenSSL, typing `openssl list-message-digest-algorithms` will display the available digest algorithms.  Example (MD5):
 
-```javascript
-var sig = Tools.digestHex( "my plaintext string", "md5" );
+```js
+let sig = Tools.digestHex( "my plaintext string", "md5" );
 // --> "659a30fb5d9958326b15c17e8444c123"
 ```
 
@@ -216,22 +216,22 @@ STRING digestBase64( PLAINTEXT, [ALGO], [BYTES] )
 
 This function is a simple wrapper around Node's [SHA-256](http://en.wikipedia.org/wiki/SHA-2) or other hashing algorithms.  The default is SHA-256, in which case it returns a URL-safe Base64 digest of the given string.  The default digest buffer size is 32 bytes (which results in a ~43 character Base64 string), but you can pass a lesser byte length as the 3rd argument to reduce the output length.
 
-```javascript
-var sig = Tools.digestBase64( "my plaintext string" );
+```js
+let sig = Tools.digestBase64( "my plaintext string" );
 // --> "a0_f1wXQWxGla4wwIAWLZmNZ05Obbto1T1Keutd2lcI"
 ```
 
 To specify the algorithm, include it as the second argument.  It should be a string set to `md5`, `sha256`, etc.  On recent releases of OpenSSL, typing `openssl list-message-digest-algorithms` will display the available digest algorithms.  Example (MD5):
 
-```javascript
-var sig = Tools.digestBase64( "my plaintext string", "md5" );
+```js
+let sig = Tools.digestBase64( "my plaintext string", "md5" );
 // --> "ZZow-12ZWDJrFcF-hETBIw"
 ```
 
 Here is an example of reducing the digest to only 8 bytes (64 bits), which results in a much shorter Base64 string:
 
 ```js
-var sig = Tools.digestBase64( "my plaintext string", "sha256", 8 );
+let sig = Tools.digestBase64( "my plaintext string", "sha256", 8 );
 // --> "a0_f1wXQWxE"
 ```
 
@@ -243,9 +243,9 @@ INTEGER numKeys( OBJECT )
 
 This function returns the number of keys in the specified hash.
 
-```javascript
-var my_hash = { foo: "bar", baz: 12345 };
-var num = Tools.numKeys( my_hash ); // 2
+```js
+let my_hash = { foo: "bar", baz: 12345 };
+let num = Tools.numKeys( my_hash ); // 2
 ```
 
 ## firstKey
@@ -256,9 +256,9 @@ STRING firstKey( OBJECT )
 
 This function returns the first key of the hash when iterating over it.  Note that hash keys are stored in an undefined order.
 
-```javascript
-var my_hash = { foo: "bar", baz: 12345 };
-var key = Tools.firstKey( my_hash ); // foo or baz
+```js
+let my_hash = { foo: "bar", baz: 12345 };
+let key = Tools.firstKey( my_hash ); // foo or baz
 ```
 
 ## hashKeysToArray
@@ -269,12 +269,12 @@ ARRAY hashKeysToArray( OBJECT )
 
 This function returns all the hash keys as an array.  The values are discarded.  Useful for sorting and then iterating over the sorted list.
 
-```javascript
-var my_hash = { foo: "bar", baz: 12345 };
-var keys = Tools.hashKeysToArray( my_hash ).sort();
+```js
+let my_hash = { foo: "bar", baz: 12345 };
+let keys = Tools.hashKeysToArray( my_hash ).sort();
 
-for (var idx = 0, len = keys.length; idx < len; idx++) {
-	var key = keys[idx];
+for (let idx = 0, len = keys.length; idx < len; idx++) {
+	let key = keys[idx];
 	// do something with key and my_hash[key]
 }
 ```
@@ -287,12 +287,12 @@ ARRAY hashValuesToArray( OBJECT )
 
 This function returns all the hash values as an array.  The keys are discarded.
 
-```javascript
-var my_hash = { foo: "bar", baz: 12345 };
-var values = Tools.hashValuesToArray( my_hash );
+```js
+let my_hash = { foo: "bar", baz: 12345 };
+let values = Tools.hashValuesToArray( my_hash );
 
-for (var idx = 0, len = values.length; idx < len; idx++) {
-	var value = values[idx];
+for (let idx = 0, len = values.length; idx < len; idx++) {
+	let value = values[idx];
 	// do something with value
 }
 ```
@@ -305,9 +305,9 @@ BOOLEAN isaHash( MIXED )
 
 This function returns `true` if the provided argument is a hash (object), `false` otherwise.
 
-```javascript
-var my_hash = { foo: "bar", baz: 12345 };
-var is_hash = Tools.isaHash( my_hash );
+```js
+let my_hash = { foo: "bar", baz: 12345 };
+let is_hash = Tools.isaHash( my_hash );
 ```
 
 ## isaArray
@@ -318,9 +318,9 @@ BOOLEAN isaArray( MIXED )
 
 This function returns `true` if the provided argument is an array (or is array-like), `false` otherwise.
 
-```javascript
-var my_arr = [ "foo", "bar", 12345 ];
-var is_arr = Tools.isaArray( my_arr );
+```js
+let my_arr = [ "foo", "bar", 12345 ];
+let is_arr = Tools.isaArray( my_arr );
 ```
 
 ## copyHash
@@ -331,9 +331,9 @@ OBJECT copyHash( OBJECT, DEEP )
 
 This function performs a shallow copy of the specified hash, and returns the copy.  Pass `true` as the 2nd argument to perform a *deep copy*, which uses JSON parse/stringify.
 
-```javascript
-var my_hash = { foo: "bar", baz: 12345 };
-var my_copy = Tools.copyHash( my_hash );
+```js
+let my_hash = { foo: "bar", baz: 12345 };
+let my_copy = Tools.copyHash( my_hash );
 ```
 
 ## copyHashRemoveKeys
@@ -344,10 +344,10 @@ OBJECT copyHashRemoveKeys( OBJECT, REMOVE )
 
 This function performs a shallow copy of the specified hash, and returns the copy, but *omits* any keys you specify in a separate hash.
 
-```javascript
-var my_hash = { foo: "bar", baz: 12345 };
-var omit_these = { baz: true };
-var my_copy = Tools.copyHashRemoveKeys( my_hash, omit_these );
+```js
+let my_hash = { foo: "bar", baz: 12345 };
+let omit_these = { baz: true };
+let my_copy = Tools.copyHashRemoveKeys( my_hash, omit_these );
 ```
 
 ## copyHashRemoveProto
@@ -358,9 +358,9 @@ OBJECT copyHashRemoveProto( OBJECT )
 
 This function performs a shallow copy of the specified hash, and returns the copy, but ensures that the copy is a "pure" object with no prototype, constructor, or any of the special properties that all standard Objects implicitly have.
 
-```javascript
-var my_hash = { foo: "bar", baz: 12345 };
-var clean_copy = Tools.copyHashRemoveProto( my_hash );
+```js
+let my_hash = { foo: "bar", baz: 12345 };
+let clean_copy = Tools.copyHashRemoveProto( my_hash );
 ```
 
 ## mergeHashes
@@ -371,10 +371,10 @@ OBJECT mergeHashes( OBJECT_A, OBJECT_B )
 
 This function merges two hashes (objects) together, and returns a new hash which contains the combination of the two keys (shallow copy).  The 2nd hash takes precedence over the first, in the event of duplicate keys.
 
-```javascript
-var hash1 = { foo: "bar" };
-var hash2 = { baz: 12345 };
-var combo = Tools.mergeHashes( hash1, hash2 );
+```js
+let hash1 = { foo: "bar" };
+let hash2 = { baz: 12345 };
+let combo = Tools.mergeHashes( hash1, hash2 );
 ```
 
 ## mergeHashInto
@@ -383,11 +383,11 @@ var combo = Tools.mergeHashes( hash1, hash2 );
 VOID mergeHashInto( OBJECT_A, OBJECT_B )
 ```
 
-This function shallow-merges {OBJECT_B} into {OBJECT_A}.  There is no return value.  Existing keys are replaced in {OBJECT_A}.
+This function shallow-merges `OBJECT_B` into `OBJECT_A`.  There is no return value.  Existing keys are replaced in `OBJECT_A`.
 
-```javascript
-var hash1 = { foo: "bar" };
-var hash2 = { baz: 12345 };
+```js
+let hash1 = { foo: "bar" };
+let hash2 = { baz: 12345 };
 Tools.mergeHashInto( hash1, hash2 );
 ```
 
@@ -399,11 +399,11 @@ OBJECT parseQueryString( URL )
 
 This function parses a standard URL query string, and returns a hash with key/value pairs for every query parameter.  Duplicate params are clobbered, the latter prevails.  Values are URL-unescaped, and all of them are strings.  The function accepts a full URL, or just the query string portion.
 
-```javascript
-var url = 'http://something.com/hello.html?foo=bar&baz=12345';
-var query = Tools.parseQueryString( url );
-var foo = query.foo; // "bar"
-var baz = query.baz; // "12345"
+```js
+let url = 'http://something.com/hello.html?foo=bar&baz=12345';
+let query = Tools.parseQueryString( url );
+let foo = query.foo; // "bar"
+let baz = query.baz; // "12345"
 ```
 
 Please note that this is a very simple function, and you should probably use the built-in Node.js [querystring](http://nodejs.org/api/querystring.html) module instead.
@@ -416,9 +416,9 @@ STRING composeQueryString( OBJECT )
 
 This function takes a hash of key/value pairs, and constructs a URL query string out of it.  Values are URL-escaped.
 
-```javascript
-var my_hash = { foo: "bar", baz: 12345 };
-var qs = Tools.composeQueryString( my_hash );
+```js
+let my_hash = { foo: "bar", baz: 12345 };
+let qs = Tools.composeQueryString( my_hash );
 // --> "?foo=bar&baz=12345"
 ```
 
@@ -432,15 +432,15 @@ ARRAY findObjectsIdx( ARRAY, CRITERIA )
 
 This function iterates over an array of hashes, and returns all the array indexes whose objects have keys which match a given criteria hash.
 
-```javascript
-var list = [
+```js
+let list = [
 	{ id: 12345, name: "Joe", eyes: "blue" },
 	{ id: 12346, name: "Frank", eyes: "brown" },
 	{ id: 12347, name: "Cynthia", eyes: "blue" }
 ];
-var criteria = { eyes: "blue" };
+let criteria = { eyes: "blue" };
 
-var idxs = Tools.findObjectsIdx( list, criteria );
+let idxs = Tools.findObjectsIdx( list, criteria );
 // --> [0, 2]
 ```
 
@@ -452,15 +452,15 @@ INTEGER findObjectIdx( ARRAY, CRITERIA )
 
 This function iterates over an array of hashes, and returns the first array index whose object has keys which match a given criteria hash.  If no objects match, `-1` is returned.
 
-```javascript
-var list = [
+```js
+let list = [
 	{ id: 12345, name: "Joe", eyes: "blue" },
 	{ id: 12346, name: "Frank", eyes: "brown" },
 	{ id: 12347, name: "Cynthia", eyes: "blue" }
 ];
-var criteria = { eyes: "blue" };
+let criteria = { eyes: "blue" };
 
-var idx = Tools.findObjectIdx( list, criteria );
+let idx = Tools.findObjectIdx( list, criteria );
 // --> 0
 ```
 
@@ -472,15 +472,15 @@ OBJECT findObject( ARRAY, CRITERIA )
 
 This function iterates over an array of hashes, and returns the first item whose object has keys which match a given criteria hash.  If no objects match, `null` is returned.
 
-```javascript
-var list = [
+```js
+let list = [
 	{ id: 12345, name: "Joe", eyes: "blue" },
 	{ id: 12346, name: "Frank", eyes: "brown" },
 	{ id: 12347, name: "Cynthia", eyes: "blue" }
 ];
-var criteria = { eyes: "blue" };
+let criteria = { eyes: "blue" };
 
-var obj = Tools.findObject( list, criteria );
+let obj = Tools.findObject( list, criteria );
 // --> { id: 12345, name: "Joe", eyes: "blue" }
 ```
 
@@ -492,15 +492,15 @@ ARRAY findObjects( ARRAY, CRITERIA )
 
 This function iterates over an array of hashes, and returns all the items whose objects have keys which match a given criteria hash.
 
-```javascript
-var list = [
+```js
+let list = [
 	{ id: 12345, name: "Joe", eyes: "blue" },
 	{ id: 12346, name: "Frank", eyes: "brown" },
 	{ id: 12347, name: "Cynthia", eyes: "blue" }
 ];
-var criteria = { eyes: "blue" };
+let criteria = { eyes: "blue" };
 
-var objs = Tools.findObjects( list, criteria );
+let objs = Tools.findObjects( list, criteria );
 // --> [{ id: 12345, name: "Joe", eyes: "blue" }, { id: 12347, name: "Cynthia", eyes: "blue" }]
 ```
 
@@ -512,13 +512,13 @@ BOOLEAN deleteObject( ARRAY, CRITERIA )
 
 This function iterates over an array of hashes, and deletes the first item whose object has keys which match a given criteria hash.  It returns `true` for success or `false` if no matching object could be found.
 
-```javascript
-var list = [
+```js
+let list = [
 	{ id: 12345, name: "Joe", eyes: "blue" },
 	{ id: 12346, name: "Frank", eyes: "brown" },
 	{ id: 12347, name: "Cynthia", eyes: "blue" }
 ];
-var criteria = { eyes: "blue" };
+let criteria = { eyes: "blue" };
 
 Tools.deleteObject( list, criteria );
 // list will now contain only Frank and Cynthia
@@ -532,13 +532,13 @@ INTEGER deleteObjects( ARRAY, CRITERIA )
 
 This function iterates over an array of hashes, and deletes all items whose objects have keys which match a given criteria hash.  It returns the number of objects deleted.
 
-```javascript
-var list = [
+```js
+let list = [
 	{ id: 12345, name: "Joe", eyes: "blue" },
 	{ id: 12346, name: "Frank", eyes: "brown" },
 	{ id: 12347, name: "Cynthia", eyes: "blue" }
 ];
-var criteria = { eyes: "blue" };
+let criteria = { eyes: "blue" };
 
 Tools.deleteObjects( list, criteria );
 // list will now contain only Frank
@@ -552,8 +552,8 @@ ARRAY alwaysArray( MIXED )
 
 This function will wrap anything passed to it into an array and return the array, unless the item passed is already an array, in which case it is simply returned verbatim.
 
-```javascript
-var arr = Tools.alwaysArray( maybe_array );
+```js
+let arr = Tools.alwaysArray( maybe_array );
 ```
 
 ## sub
@@ -564,8 +564,8 @@ STRING sub( TEMPLATE, ARGS, FATAL )
 
 This function performs placeholder substitution on a string, using square bracket delimited placeholders which may contain simple keys or even paths.
 
-```javascript
-var tree = {
+```js
+let tree = {
 	folder1: {
 		file1: "foo",
 		folder2: {
@@ -573,9 +573,9 @@ var tree = {
 		}
 	}
 };
-var template = "Hello, I would like [/folder1/folder2/file2] and also [/folder1/file1] please!";
+let template = "Hello, I would like [/folder1/folder2/file2] and also [/folder1/file1] please!";
 
-var str = Tools.sub( template, tree );
+let str = Tools.sub( template, tree );
 // --> "Hello, I would like bar and also foo please!"
 ```
 
@@ -592,7 +592,7 @@ BOOLEAN setPath( OBJECT, PATH, VALUE )
 This function will set a property value inside a hash/array tree, by first traversing a directory-style path.  Will auto-create new objects if needed.  You can use either `dir/slash/syntax` or `dot.path.syntax`.  Returns `true` on success or `false` on failure.
 
 ```js
-var tree = {
+let tree = {
 	folder1: {
 		file1: "foo"
 	}
@@ -611,8 +611,8 @@ MIXED getPath( OBJECT, PATH )
 
 This function will perform a directory-style path lookup on a hash/array tree, returning whatever object or value is pointed to, or `undefined` if not found.  You can use either `dir/slash/syntax` or `dot.path.syntax`.
 
-```javascript
-var tree = {
+```js
+let tree = {
 	folder1: {
 		file1: "foo",
 		folder2: {
@@ -621,10 +621,10 @@ var tree = {
 	}
 };
 
-var file = Tools.getPath( tree, "folder1/folder2/file2" );
+let file = Tools.getPath( tree, "folder1/folder2/file2" );
 // --> "bar"
 
-var file = Tools.getPath( tree, "folder1.folder2.file2" );
+let file = Tools.getPath( tree, "folder1.folder2.file2" );
 // --> "bar"
 ```
 
@@ -639,7 +639,7 @@ BOOLEAN deletePath( OBJECT, PATH )
 This function will delete a property value inside a hash/array tree, by first traversing a directory-style path.  You can use either `dir/slash/syntax` or `dot.path.syntax`.  Returns `true` on success or `false` on failure.
 
 ```js
-var tree = {
+let tree = {
 	folder1: {
 		file1: "foo",
 		file2: "bar"
@@ -691,9 +691,9 @@ This function parses any date string, Epoch timestamp or Date object, and produc
 
 Example usage:
 
-```javascript
-var args = Tools.getDateArgs( new Date() );
-var date_str = args.yyyy + '/' + args.mm + '/' + args.dd;
+```js
+let args = Tools.getDateArgs( new Date() );
+let date_str = args.yyyy + '/' + args.mm + '/' + args.dd;
 ```
 
 ## getTimeFromArgs
@@ -704,11 +704,11 @@ INTEGER getTimeFromArgs( OBJECT )
 
 This function will recalculate a date given an `args` object as returned from [getDateArgs()](#getdateargs).  It allows you to manipulate the `year`, `mon`, `mday`, `hour`, `min` and/or `sec` properties, and will return the computed Epoch seconds from the new set of values.  Example:
 
-```javascript
-var args = Tools.getDateArgs( new Date() );
+```js
+let args = Tools.getDateArgs( new Date() );
 args.mday = 15;
 
-var epoch = Tools.getTimeFromArgs(args);
+let epoch = Tools.getTimeFromArgs(args);
 ```
 
 This example would return the Epoch seconds from the 15th day of the current month, in the current year, and using the current time of day.
@@ -721,14 +721,14 @@ INTEGER normalizeTime( INTEGER, OBJECT )
 
 This function will "normalize" (i.e. quantize) an Epoch value to the nearest minute, hour, day, month, or year.  Meaning, you can pass in an Epoch time value, and have it return a value of the start of the current hour, midnight on the current day, the 1st of the month, etc.  To do this, pass in an object containing any keys you wish to change, e.g. `year`, `mon`, `mday`, `hour`, `min` and/or `sec`.  Example:
 
-```javascript
-var midnight = Tools.normalizeTime( Tools.timeNow(), { hour: 0, min: 0, sec: 0 } );
+```js
+let midnight = Tools.normalizeTime( Tools.timeNow(), { hour: 0, min: 0, sec: 0 } );
 ```
 
 You can actually set the values to non-zero.  For example, to return the Epoch time of exactly noon today:
 
-```javascript
-var noon = Tools.normalizeTime( Tools.timeNow(), { hour: 12, min: 0, sec: 0 } );
+```js
+let noon = Tools.normalizeTime( Tools.timeNow(), { hour: 12, min: 0, sec: 0 } );
 ```
 
 ## formatDate
@@ -740,15 +740,15 @@ STRING formatDate( MIXED, STRING )
 This function parses any date string, Epoch timestamp or Date object, and produces a formatted date/time string according to a custom template, and in the local timezone.  The template is populated using [sub()](#sub) (i.e. square bracket syntax) and can use any of the date/time properties returned by [getDateArgs()](#getdateargs).  Examples:
 
 ```js
-var now = new Date();
+let now = new Date();
 
-var str = Tools.formatDate( now, "[yyyy]/[mm]/[dd]" );
+let str = Tools.formatDate( now, "[yyyy]/[mm]/[dd]" );
 // 2019/03/22
 
-var str = Tools.formatDate( now, "[dddd], [mmmm] [mday], [yyyy]" );
+let str = Tools.formatDate( now, "[dddd], [mmmm] [mday], [yyyy]" );
 // Friday, March 22, 2019
 
-var str = Tools.formatDate( now, "[hour12]:[mi] [ampm]" );
+let str = Tools.formatDate( now, "[hour12]:[mi] [ampm]" );
 // 10:43 am
 ```
 
@@ -760,16 +760,16 @@ STRING getTextFromBytes( BYTES, PRECISION )
 
 This function generates a human-friendly text string given a number of bytes.  It reduces the units to K, MB, GB or TB as needed, and allows a configurable amount of precision after the decimal point.  The default is one decimal of precision (specify as `1`, `10`, `100`, etc.).
 
-```javascript
-var str = Tools.getTextFromBytes( 0 );    // "0 bytes"
-var str = Tools.getTextFromBytes( 1023 ); // "1023 bytes"
-var str = Tools.getTextFromBytes( 1024 ); // "1 K"
-var str = Tools.getTextFromBytes( 1126 ); // "1.1 K"
+```js
+let str = Tools.getTextFromBytes( 0 );    // "0 bytes"
+let str = Tools.getTextFromBytes( 1023 ); // "1023 bytes"
+let str = Tools.getTextFromBytes( 1024 ); // "1 K"
+let str = Tools.getTextFromBytes( 1126 ); // "1.1 K"
 
-var str = Tools.getTextFromBytes( 1599078, 1 ); // "1 MB"
-var str = Tools.getTextFromBytes( 1599078, 10 ); // "1.5 MB"
-var str = Tools.getTextFromBytes( 1599078, 100 ); // "1.52 MB"
-var str = Tools.getTextFromBytes( 1599078, 1000 ); // "1.525 MB"
+let str = Tools.getTextFromBytes( 1599078, 1 ); // "1 MB"
+let str = Tools.getTextFromBytes( 1599078, 10 ); // "1.5 MB"
+let str = Tools.getTextFromBytes( 1599078, 100 ); // "1.52 MB"
+let str = Tools.getTextFromBytes( 1599078, 1000 ); // "1.525 MB"
 ```
 
 ## getBytesFromText
@@ -780,12 +780,12 @@ INTEGER getBytesFromText( STRING )
 
 This function parses a string containing a human-friendly size count (e.g. `45 bytes` or `1.5 MB`) and converts it to raw bytes.
 
-```javascript
-var bytes = Tools.getBytesFromText( "0 bytes" ); // 0
-var bytes = Tools.getBytesFromText( "1023 bytes" ); // 1023
-var bytes = Tools.getBytesFromText( "1 K" ); // 1024
-var bytes = Tools.getBytesFromText( "1.1k" ); // 1126
-var bytes = Tools.getBytesFromText( "1.525 MB" ); // 1599078	
+```js
+let bytes = Tools.getBytesFromText( "0 bytes" ); // 0
+let bytes = Tools.getBytesFromText( "1023 bytes" ); // 1023
+let bytes = Tools.getBytesFromText( "1 K" ); // 1024
+let bytes = Tools.getBytesFromText( "1.1k" ); // 1126
+let bytes = Tools.getBytesFromText( "1.525 MB" ); // 1599078	
 ```
 
 ## commify
@@ -796,11 +796,13 @@ STRING commify( INTEGER )
 
 This function adds commas to long numbers following US-style formatting rules (add comma every 3 digits counting from right side).  Only positive integers are supported.
 
-```javascript
-var c = Tools.commify( 123 ); // "123"
-var c = Tools.commify( 1234 ); // "1,234"
-var c = Tools.commify( 1234567890 ); // "1,234,567,890"
+```js
+let c = Tools.commify( 123 ); // "123"
+let c = Tools.commify( 1234 ); // "1,234"
+let c = Tools.commify( 1234567890 ); // "1,234,567,890"
 ```
+
+**Note:** This is a legacy function, included for compatiblity purposes.  Nowadays you should be using [Intl.NumberFormat](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl/NumberFormat) instead.
 
 ## shortFloat
 
@@ -810,10 +812,10 @@ NUMBER shortFloat( NUMBER, [PLACES] )
 
 This function "shortens" a floating point number by only allowing up to `N` digits after the decimal point (defaults to `2`).  You can customize this by passing an optional 2nd argument.  Examples:
 
-```javascript
-var num1 = Tools.shortFloat( 0.12345 ); // 0.12
-var num2 = Tools.shortFloat( 0.00001 ); // 0.0
-var num3 = Tools.shortFloat( 0.00123, 3 ); // 0.001
+```js
+let num1 = Tools.shortFloat( 0.12345 ); // 0.12
+let num2 = Tools.shortFloat( 0.00001 ); // 0.0
+let num3 = Tools.shortFloat( 0.00123, 3 ); // 0.001
 ```
 
 ## pct
@@ -824,11 +826,11 @@ STRING pct( AMOUNT, MAX, FLOOR )
 
 This function calculates a percentage given an arbitrary numerical amount and a maximum value, and returns a formatted string with a '%' symbol.  Pass `true` as the 3rd argument to floor the percentage to the nearest integer.  Otherwise the value is shortened with `shortFloat()`.
 
-```javascript
-var p = Tools.pct( 5, 10 ); // "50%"
-var p = Tools.pct( 0, 1 );  // "0%"
-var p = Tools.pct( 751, 1000 ); // "75.1%"
-var p = Tools.pct( 751, 1000, true ); // "75%"
+```js
+let p = Tools.pct( 5, 10 ); // "50%"
+let p = Tools.pct( 0, 1 );  // "0%"
+let p = Tools.pct( 751, 1000 ); // "75.1%"
+let p = Tools.pct( 751, 1000, true ); // "75%"
 ```
 
 ## zeroPad
@@ -839,13 +841,13 @@ STRING zeroPad( NUMBER, MAX )
 
 This function adds zeros to the left side of a number, until the total string length meets a specified maximum (up to 10 characters).  The return value is a string, not a number.
 
-```javascript
-var padded = Tools.zeroPad( 5, 1 ); // "5"
-var padded = Tools.zeroPad( 5, 2 ); // "05"
-var padded = Tools.zeroPad( 5, 3 ); // "005"
-var padded = Tools.zeroPad( 100, 3 ); // "100"
-var padded = Tools.zeroPad( 100, 4 ); // "0100"
-var padded = Tools.zeroPad( 100, 5 ); // "00100"
+```js
+let padded = Tools.zeroPad( 5, 1 ); // "5"
+let padded = Tools.zeroPad( 5, 2 ); // "05"
+let padded = Tools.zeroPad( 5, 3 ); // "005"
+let padded = Tools.zeroPad( 100, 3 ); // "100"
+let padded = Tools.zeroPad( 100, 4 ); // "0100"
+let padded = Tools.zeroPad( 100, 5 ); // "00100"
 ```
 
 ## clamp
@@ -857,7 +859,7 @@ NUMBER clamp( NUMBER, MIN, MAX )
 This function performs a simple mathematical "clamp" operation, restricting a value between a defined range.  This is just a convenience method, which can save you a few keystrokes.  Example:
 
 ```js
-var clamped = Tools.clamp( 50, 0, 10 );
+let clamped = Tools.clamp( 50, 0, 10 );
 // --> 10
 ```
 
@@ -870,7 +872,7 @@ NUMBER lerp( START, END, AMOUNT )
 This function performs linear interpolation between two values and a specified amount between `0.0` and `1.0`.  This is just a convenience method, which can save you a few keystrokes.  Example:
 
 ```js
-var lerped = Tools.lerp( 0, 50, 0.25 );
+let lerped = Tools.lerp( 0, 50, 0.25 );
 // --> 12.5
 ```
 
@@ -882,13 +884,13 @@ STRING getTextFromSeconds( NUMBER, ABBREVIATE, SHORTEN )
 
 This function generates a human-friendly time string given a number of seconds.  It reduces the units to minutes, hours or days as needed.  You can also abbreviate the output, and shorten the extra precision.
 
-```javascript
-var str = Tools.getTextFromSeconds( 0 ); // "0 seconds"
-var str = Tools.getTextFromSeconds( 86400 ); // "1 day"
-var str = Tools.getTextFromSeconds( 90 ); // "1 minute, 30 seconds"
-var str = Tools.getTextFromSeconds( 90, true ); // "1 min, 30 sec"
-var str = Tools.getTextFromSeconds( 90, false, true ); // "1 minute"
-var str = Tools.getTextFromSeconds( 90, true, true ); // "1 min"
+```js
+let str = Tools.getTextFromSeconds( 0 ); // "0 seconds"
+let str = Tools.getTextFromSeconds( 86400 ); // "1 day"
+let str = Tools.getTextFromSeconds( 90 ); // "1 minute, 30 seconds"
+let str = Tools.getTextFromSeconds( 90, true ); // "1 min, 30 sec"
+let str = Tools.getTextFromSeconds( 90, false, true ); // "1 minute"
+let str = Tools.getTextFromSeconds( 90, true, true ); // "1 min"
 ```
 
 ## getSecondsFromText
@@ -899,12 +901,12 @@ INTEGER getSecondsFromText( STRING )
 
 This function parses a string containing a human-friendly time (e.g. `45 minutes` or `7 days`) and converts it to raw seconds.  It accepts seconds, minutes, hours, days and/or weeks.  It does not interpret "months" or "years" because those are non-exact measurements.
 
-```javascript
-var sec = Tools.getSecondsFromText( "1 second" ); // 1
-var sec = Tools.getSecondsFromText( "2min" ); // 120
-var sec = Tools.getSecondsFromText( "30m" ); // 1800
-var sec = Tools.getSecondsFromText( "12 HOURS" ); // 43200
-var sec = Tools.getSecondsFromText( "1day" ); // 86400
+```js
+let sec = Tools.getSecondsFromText( "1 second" ); // 1
+let sec = Tools.getSecondsFromText( "2min" ); // 120
+let sec = Tools.getSecondsFromText( "30m" ); // 1800
+let sec = Tools.getSecondsFromText( "12 HOURS" ); // 43200
+let sec = Tools.getSecondsFromText( "1day" ); // 86400
 ```
 
 ## getNiceRemainingTime
@@ -915,20 +917,20 @@ STRING getNiceRemainingTime( ELAPSED, COUNTER, MAX, ABBREV, SHORTEN )
 
 This function calculates the estimated remaining time on a job in progress, given the elapsed time in seconds, an arbitrary counter representing the job's progress, and a maximum value for the counter.
 
-```javascript
-var remain = Tools.getNiceRemainingTime( 45, 0.75, 1.0 );
+```js
+let remain = Tools.getNiceRemainingTime( 45, 0.75, 1.0 );
 // --> "15 seconds"
 
-var remain = Tools.getNiceRemainingTime( 3640, 0.75, 1.0 );
+let remain = Tools.getNiceRemainingTime( 3640, 0.75, 1.0 );
 // --> "20 minutes, 13 seconds"
 
-var remain = Tools.getNiceRemainingTime( 3640, 0.75, 1.0, true );
+let remain = Tools.getNiceRemainingTime( 3640, 0.75, 1.0, true );
 // --> "20 min, 13 sec"
 
-var remain = Tools.getNiceRemainingTime( 3640, 0.75, 1.0, false, true );
+let remain = Tools.getNiceRemainingTime( 3640, 0.75, 1.0, false, true );
 // --> "20 minutes"
 
-var remain = Tools.getNiceRemainingTime( 3640, 0.75, 1.0, true, true );
+let remain = Tools.getNiceRemainingTime( 3640, 0.75, 1.0, true, true );
 // --> "20 min"
 ```
 
@@ -942,9 +944,9 @@ MIXED randArray( ARRAY )
 
 This function picks a random element from the given array, and returns it.
 
-```javascript
-var fruit = ['apple', 'orange', 'banana'];
-var rand = Tools.randArray( fruit );
+```js
+let fruit = ['apple', 'orange', 'banana'];
+let rand = Tools.randArray( fruit );
 ```
 
 ## pluralize
@@ -955,9 +957,9 @@ STRING pluralize( STRING, NUMBER )
 
 This function pluralizes a string using US-English rules, given an arbitrary number.  This is useful when constructing human-friendly sentences containing a quantity of things, and you wish to say either "thing" or "things" depending on the number.
 
-```javascript
-var list = ['apple', 'orange', 'banana'];
-var text = "You have " + list.length + Tools.pluralize(" item", list.length) + " in your list.";
+```js
+let list = ['apple', 'orange', 'banana'];
+let text = "You have " + list.length + Tools.pluralize(" item", list.length) + " in your list.";
 // --> "You have 3 items in your list.";
 ```
 
@@ -977,8 +979,8 @@ STRING ucfirst( STRING )
 
 The function upper-cases the first character of a string, and lower-cases the rest.  This is very similar to the Perl core function of the same name.  Example:
 
-```javascript
-var first_name = Tools.ucfirst( 'george' );
+```js
+let first_name = Tools.ucfirst( 'george' );
 // --> "George"
 ```
 
@@ -988,9 +990,9 @@ var first_name = Tools.ucfirst( 'george' );
 STRING getErrorDescription( ERROR )
 ```
 
-This function takes a standard Node.js [System Error](https://nodejs.org/api/errors.html#errors_class_system_error) object, such as one emitted when a filesystem or network error occurs, and produces a prettier and more verbose string description.  It uses the 3rd party [errno](https://www.npmjs.com/package/errno) package, and adds its own decorations as well.  Example:
+This function takes a standard Node.js [System Error](https://nodejs.org/api/errors.html#class-systemerror) object, such as one emitted when a filesystem or network error occurs, and produces a prettier and more verbose string description.  It uses the 3rd party [errno](https://www.npmjs.com/package/errno) package, and adds its own decorations as well.  Example:
 
-```javascript
+```js
 require('fs').readFile( '/bad/file.txt', function(err, data) {
 	if (err) {
 		console.log( "Native Error: " + err.message );
@@ -1014,9 +1016,9 @@ ARRAY bufferSplit( BUFFER, SEPARATOR )
 This function splits a buffer into an array of chunks, given a separator (string or buffer).  It works similarly to the [String.split](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/split) core function, with two main differences.  First, the separator cannot be a regular expression (it must be a string or another buffer), and second, the returned split buffer chunks will occupy the same memory space as the original buffer.  Example:
 
 ```js
-var EOL = require('os').EOL;
-var data = require('fs').readFileSync( 'some_file.csv' );
-var lines = Tools.bufferSplit( data, EOL );
+const EOL = require('os').EOL;
+let data = require('fs').readFileSync( 'some_file.csv' );
+let lines = Tools.bufferSplit( data, EOL );
 ```
 
 ## fileEachLine
@@ -1041,7 +1043,7 @@ Example:
 Tools.fileEachLine( "my_large_spreadsheet.csv",
 	function(line, callback) {
 		// this is fired for each line
-		var columns = line.split(/\,\s*/);
+		let columns = line.split(/\,\s*/);
 		// do something with the data here, possibly async
 		// fire callback for next line, pass error to abort
 		callback();
@@ -1074,7 +1076,7 @@ This function fetches local user account information, give a username or numeric
 If you pass `true` as the 2nd argument, the user information will be cached in RAM for future queries on the same username or UID.  Example use:
 
 ```js
-var info = Tools.getpwnam( "jhuckaby", true );
+let info = Tools.getpwnam( "jhuckaby", true );
 if (info) {
 	process.chdir( info.dir );
 }
@@ -1096,7 +1098,7 @@ This function fetches local group account information, give a name or numerical 
 If you pass `true` as the 2nd argument, the group information will be cached in RAM for future queries on the same name or GID.  Example use:
 
 ```js
-var info = Tools.getgrnam( "games", true );
+let info = Tools.getgrnam( "games", true );
 if (info) {
 	console.log( "GID: ", info.gid );
 }
@@ -1111,7 +1113,7 @@ NUMBER tween( START, END, AMOUNT, MODE, ALGORITHM )
 This function calculates a [tween](https://en.wikipedia.org/wiki/Inbetweening) between two numbers, and returns the in-between value.  For example, this can be used to control animation with "easing" (i.e. ease-in, ease-out), and also custom mathematical curves like quadratic, quintic, etc.  Example use:
 
 ```js
-var x = Tools.tween( 0, 150, 0.5, 'EaseOut', 'Quadratic' );
+let x = Tools.tween( 0, 150, 0.5, 'EaseOut', 'Quadratic' );
 ```
 
 The output will be somewhere between `0` and `150`, controlled by the `EaseOut` mode and `Quadratic` algorithm.  If you had selected the `Linear` algorithm, this would be exactly `75` (halfway between the start and end).
@@ -1181,7 +1183,7 @@ Please note that this function specifically returns *files*, not directories.  F
 VOID walkDir( DIR, ITERATOR, CALLBACK )
 ```
 
-The `walkDir()` function recursively walks a directory on the filesystem, including all subdirectories, and it fires a custom iterator function for each file or directory encountered.  Your iterator function is passed the file path, an [fs.Stats](https://nodejs.org/api/fs.html#fs_class_fs_stats) object, and a callback.  It needs to fire the callback function, and pass `true` to recurse for directories, or `false` to skip it.  When the full directory tree is walked, the final callback is fired.  Example:
+The `walkDir()` function recursively walks a directory on the filesystem, including all subdirectories, and it fires a custom iterator function for each file or directory encountered.  Your iterator function is passed the file path, an [fs.Stats](https://nodejs.org/api/fs.html#class-fsstats) object, and a callback.  It needs to fire the callback function, and pass `true` to recurse for directories, or `false` to skip it.  When the full directory tree is walked, the final callback is fired.  Example:
 
 ```js
 Tools.walkDir( "/path/to/starting/dir",
@@ -1206,7 +1208,7 @@ Tools.walkDir( "/path/to/starting/dir",
 VOID writeFileAtomic( FILE, DATA, OPTS, CALLBACK )
 ```
 
-This function writes a file *atomically*.  That is, it writes to a temp file first, and then renames that file atop the original.  This ensures that no corruption can occur with multiple threads or processes writing to the same file at the same time.  In this case the latter prevails.  The temp file is created in the same directory to ensure the same filesystem (cross-FS renames are **not** atomic), and is named with a `.tmp.[UNIQUE]` file extension.  It accepts the same arguments as [fs.writeFile()](https://nodejs.org/api/fs.html#fs_fs_writefile_file_data_options_callback).  Example:
+This function writes a file *atomically*.  That is, it writes to a temp file first, and then renames that file atop the original.  This ensures that no corruption can occur with multiple threads or processes writing to the same file at the same time.  In this case the latter prevails.  The temp file is created in the same directory to ensure the same filesystem (cross-FS renames are **not** atomic), and is named with a `.tmp.[UNIQUE]` file extension.  It accepts the same arguments as [fs.writeFile()](https://nodejs.org/api/fs.html#fswritefilefile-data-options-callback).  Example:
 
 ```js
 Tools.writeFileAtomic( "/path/to/my/file.json", data, function(err) {
@@ -1220,7 +1222,7 @@ Tools.writeFileAtomic( "/path/to/my/file.json", data, function(err) {
 VOID writeFileAtomicSync( FILE, DATA, OPTS )
 ```
 
-This function writes a file *atomically* and synchronously.  That is, it writes to a temp file first, and then renames that file atop the original.  This ensures that no corruption can occur with multiple threads or processes writing to the same file at the same time.  In this case the latter prevails.  The temp file is created in the same directory to ensure the same filesystem (cross-FS renames are **not** atomic), and is named with a `.tmp.[UNIQUE]` file extension.  It accepts the same arguments as [fs.writeFileSync()](https://nodejs.org/api/fs.html#fs_fs_writefilesync_file_data_options).  Example:
+This function writes a file *atomically* and synchronously.  That is, it writes to a temp file first, and then renames that file atop the original.  This ensures that no corruption can occur with multiple threads or processes writing to the same file at the same time.  In this case the latter prevails.  The temp file is created in the same directory to ensure the same filesystem (cross-FS renames are **not** atomic), and is named with a `.tmp.[UNIQUE]` file extension.  It accepts the same arguments as [fs.writeFileSync()](https://nodejs.org/api/fs.html#fswritefilesyncfile-data-options).  Example:
 
 ```js
 try {
@@ -1240,12 +1242,12 @@ OBJECT parseJSON( TEXT )
 This function is a wrapper around the built-in `JSON.parse()`.  It works in exactly the same way, except that it throws improved error messages in the event of parser errors.  Specifically, it specifies the exact line number and column of the error in the source JSON.  This is mainly useful for multi-line (i.e. pretty-printed) JSON files.  Here is an example:
 
 ```js
-var bad_json = `{
+let bad_json = `{
 	"good_property_name": 12345,
 	bad_missing_quotes: 67890
 }`;
 
-var obj = Tools.parseJSON(bad_json);
+let obj = Tools.parseJSON(bad_json);
 // Error: Unexpected token b in JSON on line 3 column 2
 ```
 
@@ -1289,14 +1291,14 @@ This function sorts an array of objects by a specific named property inside each
 Here is an example:
 
 ```js
-var list = [
+let list = [
 	{ username: 'joe', date: 1654987195.435 },
 	{ username: 'fred', date: 1473634873 },
 	{ username: 'nancy', date: 1883476393.2 },
 	{ username: 'jane', date: 1289898989 },
 ];
 
-var sorted = Tools.sortBy( list, "date", { type: "number", dir: 1, copy: true } );
+let sorted = Tools.sortBy( list, "date", { type: "number", dir: 1, copy: true } );
 ```
 
 # License
