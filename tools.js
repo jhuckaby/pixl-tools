@@ -883,6 +883,9 @@ module.exports = {
 		// Response keys: username, password, uid, gid, name, dir, shell
 		var user = null;
 		
+		// sanitize username to prevent abuse
+		username = username.toString().replace(/[^\w\-\.]/g, '');
+		
 		if (use_cache && this.user_cache[username]) {
 			return this.copyHash( this.user_cache[username] );
 		}
@@ -956,6 +959,9 @@ module.exports = {
 		// Accepts group name or gid, and can optionally cache results for repeat queries for same group.
 		// Response keys: name, gid
 		var group = null;
+		
+		// sanitize group name to prevent abuse
+		name = name.toString().replace(/[^\w\-\.]/g, '');
 		
 		if (use_cache && this.group_cache[name]) {
 			return this.copyHash( this.group_cache[name] );
