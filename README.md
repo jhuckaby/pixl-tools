@@ -96,29 +96,9 @@ Then call the function of your choice:
 let id = Tools.generateUniqueID();
 ```
 
-# Module List
-
-Because I use these three modules so often, I've included them in pixl-tools as a convenience.  Here is how to access them:
-
-| Module Name | Description |
-|-------------|-------------|
-| `Tools.async` | The [async](https://www.npmjs.com/package/async) module is essential for parallel and series async loops and queues. |
-| `Tools.mkdirp` | The [mkdirp](https://www.npmjs.com/package/mkdirp) module creates directories, including parent directories. |
-| `Tools.glob` | The [glob](https://www.npmjs.com/package/glob) module performs filesystem globs (searches). |
-| `Tools.rimraf` | The [rimraf](https://www.npmjs.com/package/rimraf) module performs recursive directory deletes. |
-
-Example use:
-
-```js
-const Tools = require('pixl-tools');
-const async = Tools.async;
-const mkdirp = Tools.mkdirp;
-const glob = Tools.glob;
-```
-
 # Function List
 
-Here are all the functions included in the tools library, with links to full descriptions and examples:
+Here are all the functions included in the tools library, with full descriptions and examples:
 
 ## timeNow
 
@@ -1142,6 +1122,7 @@ The `findFiles()` function will recursively scan for files on the filesystem, an
 | `recurse` | Boolean | Recurse into nested subdirectories, defaults to `true`.  Set this to `false` to only scan the outermost directory. |
 | `all` | Boolean | Normally, dotfiles are skipped.  When this is set to `true`, dotfiles will be included (unless filtered out by `filespec`). |
 | `filter` | Function | Optional custom filter function, called for each file.  See example below for usage. |
+| `dirs` | Boolean | Optionally return directories as well as files, if they match the filespec. |
 
 Here is a simple example that finds all image files:
 
@@ -1175,7 +1156,52 @@ Tools.findFiles( "/path/to/starting/dir", function(err, files) {
 });
 ```
 
-Please note that this function specifically returns *files*, not directories.  For more low-level control over this process, see [walkDir()](#walkdir) below, which this uses internally.
+Please note that this function specifically returns *files*, not directories (unless you set the `dirs` option to `true`).  Also, for more low-level control over this process, see [walkDir()](#walkdir) below, which this function calls internally.
+
+## findFilesSync
+
+```
+ARRAY findFilesSync( DIR, [OPTS] )
+```
+
+The `findFilesSync()` function will recursively scan for files on the filesystem, and can include several filters for customization.  This is the synchronous version of the function, so there is no callback.  You need to specify a starting directory path, and an object containing options (see below).  The return value will be an array of files.  The options object can include:
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `filespec` | RegExp / String | An optional regular expression or string to match against filenames (not paths).  Defaults to `/.+/`. |
+| `recurse` | Boolean | Recurse into nested subdirectories, defaults to `true`.  Set this to `false` to only scan the outermost directory. |
+| `all` | Boolean | Normally, dotfiles are skipped.  When this is set to `true`, dotfiles will be included (unless filtered out by `filespec`). |
+| `filter` | Function | Optional custom filter function, called for each file.  See example below for usage. |
+| `dirs` | Boolean | Optionally return directories as well as files, if they match the filespec. |
+
+Here is a simple example that finds all image files:
+
+```js
+let files = Tools.findFilesSync( "/path/to/starting/dir", {
+	filespec: /\.(jpg|png|gif)$/i
+});
+console.log("All the images: ", files);
+```
+
+Here is an example of using a custom filter function:
+
+```js
+let files = Tools.findFilesSync( "/path/to/starting/dir", {
+	filter: function(file, stats) {
+		return stats.size <= 32768; // only include files 32K or less
+	}
+});
+console.log("All files 32K or less: ", files);
+```
+
+If you just want all the files, you can omit the options object:
+
+```js
+let files = Tools.findFiles( "/path/to/starting/dir");
+console.log("All the files: ", files);
+```
+
+Please note that this function specifically returns *files*, not directories (unless you set the `dirs` option to `true`).  Also, for more low-level control over this process, see [walkDirSync()](#walkdirsync) below, which this function calls internally.
 
 ## walkDir
 
@@ -1183,7 +1209,7 @@ Please note that this function specifically returns *files*, not directories.  F
 VOID walkDir( DIR, ITERATOR, CALLBACK )
 ```
 
-The `walkDir()` function recursively walks a directory on the filesystem, including all subdirectories, and it fires a custom iterator function for each file or directory encountered.  Your iterator function is passed the file path, an [fs.Stats](https://nodejs.org/api/fs.html#class-fsstats) object, and a callback.  It needs to fire the callback function, and pass `true` to recurse for directories, or `false` to skip it.  When the full directory tree is walked, the final callback is fired.  Example:
+The `walkDir()` function recursively walks a directory on the filesystem, including all subdirectories, and fires a custom iterator function for each file or directory encountered.  Your iterator function is passed the file path, an [fs.Stats](https://nodejs.org/api/fs.html#class-fsstats) object, and a callback.  It needs to fire the callback function, and pass `true` to recurse for directories, or `false` to skip it.  When the full directory tree is walked, the final callback is fired.  Example:
 
 ```js
 Tools.walkDir( "/path/to/starting/dir",
@@ -1201,6 +1227,113 @@ Tools.walkDir( "/path/to/starting/dir",
 	}
 );
 ```
+
+## walkDirSync
+
+```
+VOID walkDirSync( DIR, ITERATOR )
+```
+
+The `walkDirSync()` function recursively walks a directory on the filesystem, including all subdirectories, and fires a custom iterator function for each file or directory encountered.  This is the synchronous version of the function, so there is no callback.  Your iterator function is passed the file path, and an [fs.Stats](https://nodejs.org/api/fs.html#class-fsstats) object.  It can return `true` to recurse for directories, or `false` to skip.  Example:
+
+```js
+Tools.walkDirSync( "/path/to/starting/dir",
+	function(file, stats) {
+		// called for each file and directory
+		if (stats.isDirectory()) return true; // recurse into
+		else {
+			console.log("Found file: " + file);
+		}
+	}
+);
+console.log("Walk complete!");
+```
+
+## glob
+
+```
+VOID glob( FILESPEC, CALLBACK )
+```
+
+The `glob()` function searches for files using a [glob pattern](https://en.wikipedia.org/wiki/Glob_%28programming%29).  Example:
+
+```js
+Tools.glob( "/path/to/files/*.jpg", function(err, files) {
+	if (err) throw err;
+	console.log("Found files: ", files);
+});
+```
+
+## globSync
+
+```
+VOID globSync( FILESPEC )
+```
+
+The `globSync()` function searches for files using a [glob pattern](https://en.wikipedia.org/wiki/Glob_%28programming%29).  This is the synchronous version of the function, so there is no callback.  Example:
+
+```js
+let files = Tools.globSync( "/path/to/files/*.jpg");
+console.log("Found files: ", files);
+```
+
+This function is also available via `glob.sync`, for convenience.
+
+## rimraf
+
+```
+VOID rimraf( FILESPEC, CALLBACK )
+```
+
+The `rimraf()` function recursively deletes files and folders using a [glob pattern](https://en.wikipedia.org/wiki/Glob_%28programming%29).  The name comes from the standard Linux `rm -rf` shell command.  It will not fail if no files were found.  Example use:
+
+```js
+Tools.rimraf( "/path/to/files/*.jpg", function(err) {
+	if (err) throw err;
+});
+```
+
+## rimrafSync
+
+```
+VOID rimrafSync( FILESPEC )
+```
+
+The `rimrafSync()` function recursively deletes files and folders using a [glob pattern](https://en.wikipedia.org/wiki/Glob_%28programming%29).  The name comes from the standard Linux `rm -rf` shell command.  This is the synchronous version of the function, so there is no callback.  It will not fail if no files were found.  Example use:
+
+```js
+Tools.rimrafSync( "/path/to/files/*.jpg");
+```
+
+This function is also available via `rimraf.sync`, for convenience.
+
+## mkdirp
+
+```
+VOID mkdirp( PATH, CALLBACK )
+```
+
+The `mkdirp()` function creates a directory, and all parent directories as needed.  The name comes from the standard Linux `mkdir -p` shell command.  It will not fail if the directory already exists.  Example use:
+
+```js
+Tools.mkdirp( "/path/to/my/dir", function(err) {
+	if (err) throw err;
+});
+```
+
+## mkdirpSync
+
+```
+VOID mkdirpSync( PATH )
+```
+
+The `mkdirpSync()` function creates a directory, and all parent directories as needed.  The name comes from the standard Linux `mkdir -p` shell command.  It will not fail if the directory already exists.  This is the synchronous version of the function, so there is no callback.  Example use:
+
+```js
+Tools.mkdirpSync( "/path/to/my/dir");
+```
+
+This function is also available via `mkdirp.sync`, for convenience.
 
 ## writeFileAtomic
 
@@ -1301,11 +1434,19 @@ let list = [
 let sorted = Tools.sortBy( list, "date", { type: "number", dir: 1, copy: true } );
 ```
 
+## async
+
+This is a reference to the extremely awesome [async](https://npmjs.com/package/async) package from NPM.  I use this so frequently that I decided to include in tools.  Access it like this:
+
+```js
+const async = Tools.async;
+```
+
 # License
 
 **The MIT License**
 
-*Copyright (c) 2015 - 2022 Joseph Huckaby.*
+*Copyright (c) 2015 - 2024 Joseph Huckaby.*
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal

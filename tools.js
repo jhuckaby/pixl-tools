@@ -9,6 +9,7 @@ const crypto = require('crypto');
 const ErrNo = require('errno');
 const os = require('os');
 const hostname = os.hostname();
+const picomatch = require('picomatch');
 
 const MONTH_NAMES = [ 
 	'January', 'February', 'March', 'April', 'May', 'June', 
@@ -45,8 +46,6 @@ const BIN_DIRS = ['/usr/local/bin', '/usr/bin', '/bin', '/usr/sbin', '/sbin'];
 module.exports = {
 	
 	"async": require('async'),
-	"glob": require('glob'),
-	"rimraf": require('rimraf'),
 	
 	hostname: hostname,
 	user_cache: {},
@@ -280,7 +279,7 @@ module.exports = {
 	
 	deleteObjects: function(arr, crit) {
 		// delete all objects in obj array matching criteria
-		// TODO: This is not terribly efficient -- could use a rewrite.
+		// FUTURE: This is not terribly efficient -- could use a rewrite.
 		var count = 0;
 		while (this.deleteObject(arr, crit)) count++;
 		return count;
@@ -1035,7 +1034,7 @@ module.exports = {
 	
 	findFiles: function(dir, opts, callback) {
 		// find all files matching filespec, optionally recurse into subdirs
-		// opts: { filespec, recurse, all (dotfiles), filter }
+		// opts: { filespec, recurse, all (dotfiles), filter, dirs }
 		var files = [];
 		
 		if (!callback) { callback = opts; opts = {}; }
@@ -1049,7 +1048,10 @@ module.exports = {
 				var filename = Path.basename(file);
 				if (!opts.all && filename.match(/^\./)) return callback(false); // skip dotfiles
 				
-				if (stats.isDirectory()) return callback( opts.recurse );
+				if (stats.isDirectory()) {
+					if (opts.dirs && filename.match(opts.filespec)) files.push(file);
+					return callback( opts.recurse );
+				}
 				else {
 					if (filename.match( opts.filespec )) {
 						if (opts.filter && (opts.filter(file, stats) === false)) return callback(false); // user skip
@@ -1062,6 +1064,34 @@ module.exports = {
 				callback(err, files);
 			}
 		); // walkDir
+	},
+	
+	findFilesSync: function(dir, opts) {
+		// find all files matching filespec sync, optionally recurse into subdirs
+		// opts: { filespec, recurse, all (dotfiles), filter, dirs }
+		var files = [];
+		
+		if (!opts) opts = {};
+		if (!opts.filespec) opts.filespec = /.+/;
+		else if (typeof(opts.filespec) == 'string') opts.filespec = new RegExp(opts.filespec);
+		if (!("recurse" in opts)) opts.recurse = true;
+		
+		this.walkDirSync(dir, function(file, stats) {
+			var filename = Path.basename(file);
+			if (!opts.all && filename.match(/^\./)) return false; // skip dotfiles
+			if (stats.isDirectory()) {
+				if (opts.dirs && filename.match(opts.filespec)) files.push(file);
+				return opts.recurse;
+			}
+			else {
+				if (filename.match( opts.filespec )) {
+					if (opts.filter && (opts.filter(file, stats) === false)) return false; // user skip
+					else files.push(file);
+				}
+			}
+		}); // walkDirSync
+		
+		return files;
 	},
 	
 	walkDir: function(dir, iterator, callback) {
@@ -1078,9 +1108,8 @@ module.exports = {
 				function(filename, callback) {
 					var file = Path.join( dir, filename );
 					fs.stat( file, function(err, stats) {
-						if (err) {
-							return callback(err);
-						}
+						if (err) return callback();
+						
 						iterator( file, stats, function(cont) {
 							// recurse for dir
 							if (stats.isDirectory() && (cont !== false)) {
@@ -1092,6 +1121,90 @@ module.exports = {
 				}, callback
 			); // eachSeries
 		} ); // fs.readdir
+	},
+	
+	walkDirSync: function(dir, iterator) {
+		// walk directory tree sync, fire iterator for every file
+		// iterator is passed: (path, stats)
+		// return false from iterator to prevent descending into a dir
+		var self = this;
+		var files = fs.readdirSync(dir);
+		if (!files || !files.length) return;
+		
+		files.forEach( function(filename) {
+			var file = Path.join( dir, filename );
+			var stats = null;
+			try { stats = fs.statSync(file); }
+			catch(e) { return; }
+			var cont = iterator(file, stats);
+			if (stats.isDirectory() && (cont !== false)) {
+				self.walkDirSync( file, iterator );
+			}
+		}); // forEach
+	},
+	
+	glob: function(filespec, opts, callback) {
+		// find files using glob pattern
+		if (!callback) { callback = opts; opts = {}; }
+		
+		var pmatch = picomatch(filespec);
+		var dir = picomatch.scan(filespec).base || '.';
+		if (dir === filespec) dir = Path.dirname(dir);
+		
+		this.findFiles( dir, { dirs: true }, function(err, files) {
+			if (err) return callback(err);
+			callback(null, files.filter( function(file) { return pmatch(file); } ));
+		}); // findFiles
+	},
+	
+	globSync: function(filespec) {
+		// find files using glob pattern, sync
+		var pmatch = picomatch(filespec);
+		var dir = picomatch.scan(filespec).base || '.';
+		if (dir === filespec) dir = Path.dirname(dir);
+		var files = this.findFilesSync( dir, { dirs: true } );
+		return files.filter( function(file) { return pmatch(file); } );
+	},
+	
+	rimraf: function(filespec, opts, callback) {
+		// multi-recursive delete (rm -rf)
+		if (!callback) { callback = opts; opts = {}; }
+		var self = this;
+		
+		this.glob(filespec, function(err, files) {
+			if (err) return callback(err);
+			
+			self.async.eachSeries(files, function(file, callback) {
+				fs.rm( file, { force: true, recursive: true }, callback );
+			}, callback );
+		}); // glob
+	},
+	
+	rimrafSync: function(filespec) {
+		// multi-recursive delete (rm -rf) sync
+		this.glob.sync(filespec).forEach( function(file) {
+			fs.rmSync( file, { force: true, recursive: true } );
+		}); // glob
+	},
+	
+	mkdirp: function(path, opts, callback) {
+		// Recursively create directories
+		if (!callback) {
+			callback = opts;
+			opts = null;
+		}
+		if (!opts) opts = { mode: 0o777 };
+		if (typeof(opts) == 'number') opts = { mode: opts };
+		opts.recursive = true;
+		fs.mkdir( path, opts, callback );
+	},
+	
+	mkdirpSync: function(path, opts) {
+		// Recursively create directories, sync
+		if (!opts) opts = { mode: 0o777 };
+		if (typeof(opts) == 'number') opts = { mode: opts };
+		opts.recursive = true;
+		return fs.mkdirSync( path, opts );
 	},
 	
 	writeFileAtomic: function(file, data, opts, callback) {
@@ -1226,21 +1339,12 @@ module.exports = {
 	
 }; // module.exports
 
-// Replace old npm mkdirp with native implementation (Node v10+)
-module.exports.mkdirp = function(path, opts, callback) {
-	if (!callback) {
-		callback = opts;
-		opts = null;
-	}
-	if (!opts) opts = { mode: 0o777 };
-	if (typeof(opts) == 'number') opts = { mode: opts };
-	opts.recursive = true;
-	fs.mkdir( path, opts, callback );
-};
+// some utility functions need to be fully portable
+module.exports.glob = module.exports.glob.bind(module.exports);
+module.exports.rimraf = module.exports.rimraf.bind(module.exports);
+module.exports.mkdirp = module.exports.mkdirp.bind(module.exports);
 
-module.exports.mkdirp.sync = function(path, opts) {
-	if (!opts) opts = { mode: 0o777 };
-	if (typeof(opts) == 'number') opts = { mode: opts };
-	opts.recursive = true;
-	return fs.mkdirSync( path, opts );
-};
+// *.sync calling conventions, also portable
+module.exports.glob.sync = module.exports.globSync.bind(module.exports);
+module.exports.rimraf.sync = module.exports.rimrafSync.bind(module.exports);
+module.exports.mkdirp.sync = module.exports.mkdirpSync.bind(module.exports);
