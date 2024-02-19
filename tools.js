@@ -1148,10 +1148,12 @@ module.exports = {
 		if (!callback) { callback = opts; opts = {}; }
 		
 		var pmatch = picomatch(filespec);
-		var dir = picomatch.scan(filespec).base || '.';
+		var pinfo = picomatch.scan(filespec);
+		var dir = pinfo.base || '.';
 		if (dir === filespec) dir = Path.dirname(dir);
+		var recurse = !!pinfo.glob.match(/(\*\*|\/)/);
 		
-		this.findFiles( dir, { dirs: true }, function(err, files) {
+		this.findFiles( dir, { recurse, dirs: true }, function(err, files) {
 			if (err) return callback(err);
 			callback(null, files.filter( function(file) { return pmatch(file); } ));
 		}); // findFiles
@@ -1160,9 +1162,11 @@ module.exports = {
 	globSync: function(filespec) {
 		// find files using glob pattern, sync
 		var pmatch = picomatch(filespec);
-		var dir = picomatch.scan(filespec).base || '.';
+		var pinfo = picomatch.scan(filespec);
+		var dir = pinfo.base || '.';
 		if (dir === filespec) dir = Path.dirname(dir);
-		var files = this.findFilesSync( dir, { dirs: true } );
+		var recurse = !!pinfo.glob.match(/(\*\*|\/)/);
+		var files = this.findFilesSync( dir, { recurse, dirs: true } );
 		return files.filter( function(file) { return pmatch(file); } );
 	},
 	
