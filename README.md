@@ -75,6 +75,7 @@
 	* [findBin](#findbin)
 	* [findBinSync](#findbinsync)
 	* [sortBy](#sortby)
+	* [includesAny](#includesany)
 	* [async](#async)
 - [License](#license)
 
@@ -1440,6 +1441,19 @@ let list = [
 ];
 
 let sorted = Tools.sortBy( list, "date", { type: "number", dir: 1, copy: true } );
+```
+
+## includesAny
+
+```
+BOOLEAN includesAny( HAYSTACK, NEEDLES )
+```
+
+Returns true if `haystack` contains any `needles`, false otherwise.  Both arguments must be arrays.  This is similar to [Array.includes]() except that it searches the first array (haystack) for **any** matches in the second array (needles).  Example use:
+
+```js
+var haystack = ['red', 'green', 'yellow', 'blue', 'purple', 'black'];
+var matched = Tools.includesAny(haystack, ['red', 'white', 'blue']); // true
 ```
 
 ## async

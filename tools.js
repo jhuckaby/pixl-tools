@@ -1339,6 +1339,15 @@ module.exports = {
 		} );
 		
 		return arr;
+	},
+	
+	includesAny: function(haystack, needles) {
+		// return true if haystack contains any needles
+		// (like Array.includes, but searches first array for ANY matches in second array)
+		for (var idx = 0, len = needles.length; idx < len; idx++) {
+			if (haystack.includes(needles[idx])) return true;
+		}
+		return false;
 	}
 	
 }; // module.exports
