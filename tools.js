@@ -1034,7 +1034,7 @@ module.exports = {
 	
 	findFiles: function(dir, opts, callback) {
 		// find all files matching filespec, optionally recurse into subdirs
-		// opts: { filespec, recurse, all (dotfiles), filter, dirs }
+		// opts: { filespec, recurse, all (dotfiles), filter, dirs, stats }
 		var files = [];
 		
 		if (!callback) { callback = opts; opts = {}; }
@@ -1047,15 +1047,17 @@ module.exports = {
 			function(file, stats, callback) {
 				var filename = Path.basename(file);
 				if (!opts.all && filename.match(/^\./)) return callback(false); // skip dotfiles
+				var info = { path: file, size: stats.size, mtime: stats.mtimeMs / 1000 };
 				
 				if (stats.isDirectory()) {
-					if (opts.dirs && filename.match(opts.filespec)) files.push(file);
+					info.dir = true;
+					if (opts.dirs && filename.match(opts.filespec)) files.push( opts.stats ? info : file );
 					return callback( opts.recurse );
 				}
 				else {
 					if (filename.match( opts.filespec )) {
 						if (opts.filter && (opts.filter(file, stats) === false)) return callback(false); // user skip
-						else files.push(file);
+						else files.push( opts.stats ? info : file );
 					}
 				}
 				callback();
@@ -1068,7 +1070,7 @@ module.exports = {
 	
 	findFilesSync: function(dir, opts) {
 		// find all files matching filespec sync, optionally recurse into subdirs
-		// opts: { filespec, recurse, all (dotfiles), filter, dirs }
+		// opts: { filespec, recurse, all (dotfiles), filter, dirs, stats }
 		var files = [];
 		
 		if (!opts) opts = {};
@@ -1079,14 +1081,17 @@ module.exports = {
 		this.walkDirSync(dir, function(file, stats) {
 			var filename = Path.basename(file);
 			if (!opts.all && filename.match(/^\./)) return false; // skip dotfiles
+			var info = { file, size: stats.size, mtime: stats.mtimeMs / 1000 };
+			
 			if (stats.isDirectory()) {
-				if (opts.dirs && filename.match(opts.filespec)) files.push(file);
+				info.dir = true;
+				if (opts.dirs && filename.match(opts.filespec)) files.push( opts.stats ? info : file );
 				return opts.recurse;
 			}
 			else {
 				if (filename.match( opts.filespec )) {
 					if (opts.filter && (opts.filter(file, stats) === false)) return false; // user skip
-					else files.push(file);
+					else files.push( opts.stats ? info : file );
 				}
 			}
 		}); // walkDirSync

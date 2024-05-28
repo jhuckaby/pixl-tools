@@ -1132,6 +1132,7 @@ The `findFiles()` function will recursively scan for files on the filesystem, an
 | `all` | Boolean | Normally, dotfiles are skipped.  When this is set to `true`, dotfiles will be included (unless filtered out by `filespec`). |
 | `filter` | Function | Optional custom filter function, called for each file.  See example below for usage. |
 | `dirs` | Boolean | Optionally return directories as well as files, if they match the filespec. |
+| `stats` | Boolean | Optionally return an object for each file, containing `path`, `size` and `mtime` properties. |
 
 Here is a simple example that finds all image files:
 
@@ -1182,6 +1183,7 @@ The `findFilesSync()` function will recursively scan for files on the filesystem
 | `all` | Boolean | Normally, dotfiles are skipped.  When this is set to `true`, dotfiles will be included (unless filtered out by `filespec`). |
 | `filter` | Function | Optional custom filter function, called for each file.  See example below for usage. |
 | `dirs` | Boolean | Optionally return directories as well as files, if they match the filespec. |
+| `stats` | Boolean | Optionally return an object for each file, containing `path`, `size` and `mtime` properties. |
 
 Here is a simple example that finds all image files:
 
