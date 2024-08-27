@@ -548,10 +548,10 @@ let arr = Tools.alwaysArray( maybe_array );
 ## sub
 
 ```
-STRING sub( TEMPLATE, ARGS, FATAL )
+STRING sub( TEMPLATE, ARGS, [FATAL, [FALLBACK, [FILTER]]] )
 ```
 
-This function performs placeholder substitution on a string, using square bracket delimited placeholders which may contain simple keys or even paths.
+This function performs placeholder substitution on a string, using square bracket delimited placeholders which may contain simple keys or even paths.  The paths can use either slash notation or dot notation.  Example:
 
 ```js
 let tree = {
@@ -570,7 +570,11 @@ let str = Tools.sub( template, tree );
 
 You can omit the leading slashes if you are doing single-level hash lookups.
 
-If you pass true for the `FATAL` argument, the function will return `null` if any variable lookups fail.  The default behavior is to preserve the original formatting (with placeholders and all) if the lookup fails.
+The three arguments at the end are all optional:
+
+- If you pass true for the `FATAL` argument, the function will return `null` if any variable lookups fail.  The default behavior is to preserve the original formatting (with placeholders and all) if the lookup fails.
+- If you pass a string for the `FALLBACK` argument, it will be used as a fallback substitution value if the path lookup fails (only applies if `FATAL` is false).
+- If you pass a function for the `FILTER` argument, all string values will be passed through that function before they are inserted into the template.  For example, pass the global `encodeURIComponent` function to URL-encode all substituted values.
 
 ## setPath
 

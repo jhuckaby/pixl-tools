@@ -327,7 +327,7 @@ module.exports = {
 		return obj;
 	},
 	
-	sub: function(text, args, fatal, fallback) {
+	sub: function(text, args, fatal, fallback, filter) {
 		// perform simple [placeholder] substitution using supplied
 		// args object and return transformed text
 		var self = this;
@@ -336,6 +336,7 @@ module.exports = {
 		if (typeof(text) == 'undefined') text = '';
 		text = '' + text;
 		if (!args) args = {};
+		if (fallback && filter) fallback = filter(fallback);
 		
 		text = text.replace(/\[([^\]]+)\]/g, function(m_all, name) {
 			value = self.getPath(args, name);
@@ -343,6 +344,7 @@ module.exports = {
 				result = false;
 				return fallback || m_all;
 			}
+			else if (filter) return filter(value);
 			else return value;
 		} );
 		
