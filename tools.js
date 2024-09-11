@@ -1083,7 +1083,7 @@ module.exports = {
 		this.walkDirSync(dir, function(file, stats) {
 			var filename = Path.basename(file);
 			if (!opts.all && filename.match(/^\./)) return false; // skip dotfiles
-			var info = { file, size: stats.size, mtime: stats.mtimeMs / 1000 };
+			var info = { path: file, size: stats.size, mtime: stats.mtimeMs / 1000 };
 			
 			if (stats.isDirectory()) {
 				info.dir = true;
