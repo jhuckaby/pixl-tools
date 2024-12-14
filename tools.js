@@ -54,6 +54,10 @@ module.exports = {
 	_uniqueIDCounter: 0,
 	_shortIDCounter: Math.floor( Math.random() * Math.pow(36, 2) ),
 	
+	NEVER_MATCH: /(?!)/,
+	
+	noop: function() {},
+	
 	timeNow: function(floor) {
 		// return current epoch time
 		var epoch = (new Date()).getTime() / 1000;
