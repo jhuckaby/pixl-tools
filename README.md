@@ -493,6 +493,46 @@ let objs = Tools.findObjects( list, criteria );
 // --> [{ id: 12345, name: "Joe", eyes: "blue" }, { id: 12347, name: "Cynthia", eyes: "blue" }]
 ```
 
+## findObjectDeep
+
+```
+OBJECT findObjectDeep( ARRAY, CRITERIA )
+```
+
+This function iterates over an array of hashes, and returns the first item whose object has deep properties which match a given criteria hash with `dot.path.properties`.  If no objects match, `null` is returned.  The format of the criteria properties should be compatible with [getPath()](#getpath).
+
+```js
+let list = [
+	{ id: 12345, params: { name: "Joe", eyes: "blue" } },
+	{ id: 12346, params: { name: "Frank", eyes: "brown" } },
+	{ id: 12347, params: { name: "Cynthia", eyes: "blue" } }
+];
+let criteria = { 'params.eyes': "blue" };
+
+let obj = Tools.findObjecDeep( list, criteria );
+// --> { id: 12345, params: { name: "Joe", eyes: "blue" } }
+```
+
+## findObjectsDeep
+
+```
+ARRAY findObjectsDeep( ARRAY, CRITERIA )
+```
+
+This function iterates over an array of hashes, and returns all the items whose objects have deep properties which match a given criteria hash with `dot.path.properties`.  If none match, an empty array is returned.  The format of the criteria properties should be compatible with [getPath()](#getpath).
+
+```js
+let list = [
+	{ id: 12345, params: { name: "Joe", eyes: "blue" } },
+	{ id: 12346, params: { name: "Frank", eyes: "brown" } },
+	{ id: 12347, params: { name: "Cynthia", eyes: "blue" } }
+];
+let criteria = { 'params.eyes': "blue" };
+
+let objs = Tools.findObjectsDeep( list, criteria );
+// --> [{ id: 12345, params: { name: "Joe", eyes: "blue" } }, { id: 12347, params: { name: "Cynthia", eyes: "blue" } }]
+```
+
 ## deleteObject
 
 ```

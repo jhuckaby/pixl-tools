@@ -266,6 +266,32 @@ module.exports = {
 		return objs;
 	},
 	
+	findObjectsDeep: function(arr, crit, max) {
+		// find and return all objects that match crit paths/values
+		var results = [];
+		var num_crit = 0;
+		for (var a in crit) num_crit++;
+		
+		for (var idx = 0, len = arr.length; idx < len; idx++) {
+			var matches = 0;
+			for (var key in crit) {
+				if (this.getPath(arr[idx], key) == crit[key]) matches++;
+			}
+			if (matches == num_crit) {
+				results.push(arr[idx]);
+				if (max && (results.length >= max)) return results;
+			}
+		} // foreach elem
+		
+		return results;
+	},
+	
+	findObjectDeep: function(arr, crit) {
+		// return first found object matching crit paths/values, or null if not found
+		var results = this.findObjectsDeep(arr, crit, 1);
+		return results.length ? results[0] : null;
+	},
+	
 	deleteObject: function(arr, crit) {
 		// walk array looking for nested object matching criteria object
 		// delete first object found
