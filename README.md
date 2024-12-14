@@ -27,6 +27,8 @@
 	* [findObjectIdx](#findobjectidx)
 	* [findObject](#findobject)
 	* [findObjects](#findobjects)
+	* [findObjectDeep](#findobjectdeep)
+	* [findObjectsDeep](#findobjectsdeep)
 	* [deleteObject](#deleteobject)
 	* [deleteObjects](#deleteobjects)
 	* [alwaysArray](#alwaysarray)
