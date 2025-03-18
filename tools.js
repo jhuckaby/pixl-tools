@@ -1184,7 +1184,7 @@ module.exports = {
 		// find files using glob pattern
 		if (!callback) { callback = opts; opts = {}; }
 		
-		var pmatch = picomatch(filespec);
+		var pmatch = picomatch(filespec, opts || {});
 		var pinfo = picomatch.scan(filespec);
 		var dir = pinfo.base || '.';
 		if (dir === filespec) dir = Path.dirname(dir);
@@ -1196,9 +1196,9 @@ module.exports = {
 		}); // findFiles
 	},
 	
-	globSync: function(filespec) {
+	globSync: function(filespec, opts) {
 		// find files using glob pattern, sync
-		var pmatch = picomatch(filespec);
+		var pmatch = picomatch(filespec, opts || {});
 		var pinfo = picomatch.scan(filespec);
 		var dir = pinfo.base || '.';
 		if (dir === filespec) dir = Path.dirname(dir);
