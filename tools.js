@@ -46,6 +46,7 @@ const BIN_DIRS = ['/usr/local/bin', '/usr/bin', '/bin', '/usr/sbin', '/sbin'];
 module.exports = {
 	
 	"async": require('async'),
+	picomatch: picomatch,
 	
 	hostname: hostname,
 	user_cache: {},
