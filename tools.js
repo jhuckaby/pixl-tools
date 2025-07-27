@@ -1,5 +1,5 @@
 // Misc Tools for Node.js
-// Copyright (c) 2015 - 2021 Joseph Huckaby
+// Copyright (c) 2015 - 2025 Joseph Huckaby
 // Released under the MIT License
 
 const fs = require('fs');
@@ -43,6 +43,17 @@ const EASE_MODES = {
 
 const BIN_DIRS = ['/usr/local/bin', '/usr/bin', '/bin', '/usr/sbin', '/sbin'];
 
+const MATCH_ANSI = (function() {
+	// Borrowed from https://github.com/chalk/ansi-regex (MIT)
+	const ST = '(?:\\u0007|\\u001B\\u005C|\\u009C)';
+	const pattern = [
+		`[\\u001B\\u009B][[\\]()#;?]*(?:(?:(?:(?:;[-a-zA-Z\\d\\/#&.:=?%@~_]+)*|[a-zA-Z\\d]+(?:;[-a-zA-Z\\d\\/#&.:=?%@~_]*)*)?${ST})`,
+		'(?:(?:\\d{1,4}(?:;\\d{0,4})*)?[\\dA-PR-TZcf-nq-uy=><~]))',
+	].join('|');
+	
+	return new RegExp(pattern, 'g');
+})();
+
 module.exports = {
 	
 	"async": require('async'),
@@ -56,6 +67,7 @@ module.exports = {
 	_shortIDCounter: Math.floor( Math.random() * Math.pow(36, 2) ),
 	
 	NEVER_MATCH: /(?!)/,
+	MATCH_ANSI: MATCH_ANSI,
 	
 	noop: function() {},
 	
@@ -1386,6 +1398,11 @@ module.exports = {
 			if (haystack.includes(needles[idx])) return true;
 		}
 		return false;
+	},
+	
+	stripANSI: function(str) {
+		// strip ansi characters from a string
+		return str.replace(MATCH_ANSI, '');
 	}
 	
 }; // module.exports

@@ -78,6 +78,7 @@
 	* [findBinSync](#findbinsync)
 	* [sortBy](#sortby)
 	* [includesAny](#includesany)
+	* [stripANSI](#stripansi)
 	* [async](#async)
 - [License](#license)
 
@@ -1503,6 +1504,22 @@ Returns true if `haystack` contains any `needles`, false otherwise.  Both argume
 var haystack = ['red', 'green', 'yellow', 'blue', 'purple', 'black'];
 var matched = Tools.includesAny(haystack, ['red', 'white', 'blue']); // true
 ```
+
+## stripANSI
+
+```
+STRING stripANSI( STRING )
+```
+
+Safely strips all [ANSI escape codes](https://en.wikipedia.org/wiki/ANSI_escape_code) from a given string, returning a new string.  We are borrowing the regular expression from [ansi-regex](https://www.npmjs.com/package/ansi-regex) for this work.  Example use:
+
+```js
+let text = '\u001B[4mcake\u001B[0m';
+let stripped = Tools.stripANSI(text);
+// --> cake
+```
+
+The raw regexp itself is also available at `Tools.MATCH_ANSI` should you need it.
 
 ## async
 
