@@ -70,6 +70,10 @@ module.exports = {
 	MATCH_ANSI: MATCH_ANSI,
 	MATCH_BAD_KEY: /^(constructor|__defineGetter__|__defineSetter__|hasOwnProperty|__lookupGetter__|__lookupSetter__|isPrototypeOf|propertyIsEnumerable|toString|valueOf|__proto__|toLocaleString|0)$/,
 	
+	isWindows: !!process.platform.match(/^win/),
+	isLinux: !!process.platform.match(/^linux/),
+	isMac: !!process.platform.match(/^darwin/),
+	
 	noop: function() {},
 	
 	timeNow: function(floor) {
@@ -1197,8 +1201,10 @@ module.exports = {
 	glob: function(filespec, opts, callback) {
 		// find files using glob pattern
 		if (!callback) { callback = opts; opts = {}; }
+		if (!opts) opts = {};
+		if (this.isWindows) opts.windows = true; // allow backslash dir seps
 		
-		var pmatch = picomatch(filespec, opts || {});
+		var pmatch = picomatch(filespec, opts);
 		var pinfo = picomatch.scan(filespec);
 		var dir = pinfo.base || '.';
 		if (dir === filespec) dir = Path.dirname(dir);
@@ -1212,7 +1218,10 @@ module.exports = {
 	
 	globSync: function(filespec, opts) {
 		// find files using glob pattern, sync
-		var pmatch = picomatch(filespec, opts || {});
+		if (!opts) opts = {};
+		if (this.isWindows) opts.windows = true; // allow backslash dir seps
+		
+		var pmatch = picomatch(filespec, opts);
 		var pinfo = picomatch.scan(filespec);
 		var dir = pinfo.base || '.';
 		if (dir === filespec) dir = Path.dirname(dir);

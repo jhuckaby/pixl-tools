@@ -79,7 +79,15 @@
 	* [sortBy](#sortby)
 	* [includesAny](#includesany)
 	* [stripANSI](#stripansi)
+	* [noop](#noop)
+- [Misc](#misc)
 	* [async](#async)
+	* [isLinux](#islinux)
+	* [isMac](#ismac)
+	* [isWindows](#iswindows)
+	* [NEVER_MATCH](#never_match)
+	* [MATCH_ANSI](#match_ansi)
+	* [MATCH_BAD_KEY](#match_bad_key)
 - [License](#license)
 
 </details>
@@ -1521,6 +1529,14 @@ let stripped = Tools.stripANSI(text);
 
 The raw regexp itself is also available at `Tools.MATCH_ANSI` should you need it.
 
+## noop
+
+This is a no-op function which does nothing.
+
+# Misc
+
+Here are a few non-functions available in the `Tools` object.
+
 ## async
 
 This is a reference to the extremely awesome [async](https://npmjs.com/package/async) package from NPM.  I use this so frequently that I decided to include in tools.  Access it like this:
@@ -1528,6 +1544,30 @@ This is a reference to the extremely awesome [async](https://npmjs.com/package/a
 ```js
 const async = Tools.async;
 ```
+
+## isLinux
+
+This boolean will be true if the current platform is Linux.
+
+## isMac
+
+This boolean will be true if the current platform is macOS (Darwin).
+
+## isWindows
+
+This boolean will be true if the current platform is Windows.
+
+## NEVER_MATCH
+
+This pre-compiled regular expression will *never match* no matter what.
+
+## MATCH_ANSI
+
+This pre-compiled regular expression will match any ANSI escape codes.  Used by [stripANSI](#stripansi).
+
+## MATCH_BAD_KEY
+
+This pre-compiled regular expression will match any of the "hidden" keys that exist in all objects, e.g. `__proto__`.
 
 # License
 
