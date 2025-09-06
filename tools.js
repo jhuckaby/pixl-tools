@@ -1202,7 +1202,10 @@ module.exports = {
 		// find files using glob pattern
 		if (!callback) { callback = opts; opts = {}; }
 		if (!opts) opts = {};
-		if (this.isWindows) opts.windows = true; // allow backslash dir seps
+		if (this.isWindows) {
+			opts.windows = true; // allow backslash dir seps
+			filespec = filespec.replace(/\\/g, '/'); // convert backs to fronts in pattern
+		}
 		
 		var pmatch = picomatch(filespec, opts);
 		var pinfo = picomatch.scan(filespec);
@@ -1219,7 +1222,10 @@ module.exports = {
 	globSync: function(filespec, opts) {
 		// find files using glob pattern, sync
 		if (!opts) opts = {};
-		if (this.isWindows) opts.windows = true; // allow backslash dir seps
+		if (this.isWindows) {
+			opts.windows = true; // allow backslash dir seps
+			filespec = filespec.replace(/\\/g, '/'); // convert backs to fronts in pattern
+		}
 		
 		var pmatch = picomatch(filespec, opts);
 		var pinfo = picomatch.scan(filespec);
