@@ -108,18 +108,30 @@ module.exports = {
 		return output.replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, ''); // url-safe
 	},
 	
-	generateShortID: function(prefix) {
+	generateShortID: function(prefix, len = 10) {
 		// generate short id using high-res server time, and a static counter,
-		// both converted to alphanumeric lower-case (base-36), ends up being ~10 chars.
+		// both converted to alphanumeric lower-case (base-36), ends up being 10 chars (sans prefix).
+		// specify a longer length to add crypto-random chars to the end
 		// allows for *up to* 1,296 unique ids per millisecond (give or take).
 		this._shortIDCounter++;
 		if (this._shortIDCounter >= Math.pow(36, 2)) this._shortIDCounter = 0;
 		
-		return [
+		var id = [
 			prefix || '',
 			this.zeroPad( (new Date()).getTime().toString(36), 8 ),
 			this.zeroPad( this._shortIDCounter.toString(36), 2 )
 		].join('');
+		
+		if (id.length < len) {
+			var chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
+			var arr = crypto.webcrypto.getRandomValues( new Uint8Array(len - id.length) );
+			
+			for (var idx = 0, len = arr.length; idx < len; idx++) {
+				id += chars[ arr[idx] % chars.length ];
+			}
+		}
+		
+		return id;
 	},
 	
 	digestHex: function(str, algo, len) {

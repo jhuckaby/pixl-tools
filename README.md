@@ -178,14 +178,21 @@ Please note that this is *not* designed to be cryptographically secure.  It does
 ## generateShortID
 
 ```
-STRING generateShortID( PREFIX )
+STRING generateShortID( PREFIX, LENGTH )
 ```
 
-This function generates a short, semi-unique pseudo-random alphanumeric ID using high-resolution server time, and a static counter.  Both values are converted to [Base-36](https://en.wikipedia.org/wiki/Base36) (lower-case alphanumeric encoding), and combined to produce a 10-12 character ID, plus an optional string prefix if provided.  This algorithm allows for *up to* 1,296 unique IDs per millisecond, but due to server clock adjustments (NTP) this could theoretically collide with itself.  Use with caution.  Example:
+This function generates a short, semi-unique pseudo-random alphanumeric ID using high-resolution server time, and a static counter.  Both values are converted to [Base-36](https://en.wikipedia.org/wiki/Base36) (lower-case alphanumeric encoding), and combined to produce a 10 character ID, plus an optional string prefix if provided.  This algorithm allows for *up to* 1,296 unique IDs per millisecond, but due to server clock adjustments (NTP) this could theoretically collide with itself.  Use with caution.  Example:
 
 ```js
 let id = Tools.generateShortID('z');
 // Example: "zjcdtsls30r"
+```
+
+This function also accepts an optional length argument, which, if specified and greater than 10, will produce additional crypto-random Base36 characters as a suffix.  Using this you can produce a 4-part composite ID: A fixed prefix (custom length), a time-based portion (8 characters), a static looping counter (2 characters), and a cryptographic suffix (custom length).  This produces a nice, database-friendly "sortable" ID, as long as the prefix and length are always specified the same.  Example at 16 characters:
+
+```js
+let id = Tools.generateShortID('j', 16);
+// Example: "jmfopulv7m5o4dz6"
 ```
 
 ## digestHex
