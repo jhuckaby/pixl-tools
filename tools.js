@@ -41,7 +41,17 @@ const EASE_MODES = {
 	}
 };
 
-const BIN_DIRS = ['/usr/local/bin', '/usr/bin', '/bin', '/usr/sbin', '/sbin'];
+const BIN_DIRS = [
+	'/bin',
+    '/sbin',
+    '/usr/bin',
+    '/usr/sbin',
+    '/usr/local/bin',
+    '/usr/local/sbin'
+];
+if (process.env.HOME) {
+	BIN_DIRS.push( Path.join(process.env.HOME, '.local', 'bin') );
+}
 
 const MATCH_ANSI = (function() {
 	// Borrowed from https://github.com/chalk/ansi-regex (MIT)
