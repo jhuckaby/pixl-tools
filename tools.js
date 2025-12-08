@@ -84,59 +84,75 @@ module.exports = {
 	isLinux: !!process.platform.match(/^linux/),
 	isMac: !!process.platform.match(/^darwin/),
 	
+	randomPool: {
+		// provide INSANELY fast access to small amounts of randomBytes
+		// about 1000X faster than calling crypto.randomBytes each time
+		// does not allocate pool until first call
+		pool: Buffer.alloc(0),
+		size: 32768,
+		offset: 0,
+		
+		getBytes: function(len) {
+			// suck len bytes from the pool, refill if necessary
+			if (len > this.size) this.len = this.size;
+			if (this.offset + len > this.pool.length) {
+				this.pool = crypto.randomBytes( this.size );
+				this.offset = 0;
+			}
+			const out = this.pool.subarray(this.offset, this.offset + len);
+			this.offset += len;
+			return out;
+		}
+	},
+	
 	noop: function() {},
 	
 	timeNow: function(floor) {
 		// return current epoch time
-		var epoch = (new Date()).getTime() / 1000;
+		var epoch = Date.now() / 1000;
 		return floor ? Math.floor(epoch) : epoch;
 	},
 	
 	getRandomEntropy(salt) {
 		// get random string using some readily-available bits of entropy
-		this._uniqueIDCounter++;
+		// included for legacy only -- not used for IDs anymore
 		return [
 			'SALT_7fb1b7485647b1782c715474fba28fd1',
 			this.timeNow(),
 			Math.random(),
 			hostname,
 			process.pid,
-			this._uniqueIDCounter,
+			this._uniqueIDCounter++,
 			salt || ''
 		].join('-');
 	},
 	
-	generateUniqueID: function(len, salt) {
-		// generate unique ID using SHA256 and some readily-available bits of entropy
-		return crypto.createHash('sha256').update( this.getRandomEntropy(salt) ).digest('hex').substring(0, len || 64);
+	generateUniqueID: function(len = 64) {
+		// generate cryptographically secure unique hexadecimal string ID
+		const buf = this.randomPool.getBytes( Math.ceil(len / 2) );
+		return buf.toString('hex').slice(0, len);
 	},
 	
-	generateUniqueBase64: function(bytes, salt) {
-		// generate unique url-safe base64 ID using some readily-available bits of entropy
-		var buf = crypto.createHash('sha256').update( this.getRandomEntropy(salt) ).digest();
-		var output = bytes ? buf.slice(0, bytes).toString('base64') : buf.toString('base64');
-		return output.replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, ''); // url-safe
+	generateUniqueBase64: function(bytes = 32) {
+		// generate cryptographically secure unique URL-Safe Base64 ID
+		const buf = this.randomPool.getBytes( bytes );
+		return buf.toString('base64').replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
 	},
 	
-	generateShortID: function(prefix, len = 10) {
-		// generate short id using high-res server time, and a static counter,
-		// both converted to alphanumeric lower-case (base-36), ends up being 10 chars (sans prefix).
-		// specify a longer length to add crypto-random chars to the end
-		// allows for *up to* 1,296 unique ids per millisecond (give or take).
+	generateShortID: function(prefix = '', len = 16) {
+		// generate sortable short id using high-res server time, a static counter, and crypto random bytes
+		// FUTURE: beware the Base36 time rollover coming in year 2059, which will cause a "resort"
 		this._shortIDCounter++;
 		if (this._shortIDCounter >= Math.pow(36, 2)) this._shortIDCounter = 0;
 		
-		var id = [
-			prefix || '',
-			this.zeroPad( (new Date()).getTime().toString(36), 8 ),
-			this.zeroPad( this._shortIDCounter.toString(36), 2 )
-		].join('');
+		let id = prefix + Date.now().toString(36) + this._shortIDCounter.toString(36);
 		
 		if (id.length < len) {
-			var chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
-			var arr = crypto.webcrypto.getRandomValues( new Uint8Array(len - id.length) );
+			const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
+			const needed = len - id.length;
+			const arr = this.randomPool.getBytes(needed);
 			
-			for (var idx = 0, len = arr.length; idx < len; idx++) {
+			for (let idx = 0; idx < needed; idx++) {
 				id += chars[ arr[idx] % chars.length ];
 			}
 		}

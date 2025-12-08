@@ -139,7 +139,7 @@ let floored = Tools.timeNow(true);
 STRING generateUniqueID( LENGTH, SALT )
 ```
 
-This function generates a pseudo-random alphanumeric (hexadecimal) ID by combining various bits of local entropy, and hashing it together with [SHA-256](http://en.wikipedia.org/wiki/SHA-2).  The default length is 64 characters, but you can pass in any lesser length to chop it.  If you want to add your own entropy, pass it as the 2nd argument.
+This function generates a cryptographically secure alphanumeric (lower-case hexadecimal) ID.  It is *extremely* fast, as it uses a local 32K cache and only calls [crypto.randomBytes](https://nodejs.org/api/crypto.html#cryptorandombytessize-callback) to refill it.  The default length is 64 characters, but you can pass in any lesser length to chop it.
 
 ```js
 let id = Tools.generateUniqueID();
@@ -148,11 +148,9 @@ let id = Tools.generateUniqueID();
 let id = Tools.generateUniqueID( 32 );
 // Example: "507d935eff6fbc502ad1156c728641b6"
 
-let id = Tools.generateUniqueID( 16, "my extra entropy!" );
+let id = Tools.generateUniqueID( 16 );
 // Example: "3b71219d2bfa2b0c"
 ```
-
-Please note that this is *not* designed to be cryptographically secure.  It doesn't use Node's [crypto.randomBytes](http://nodejs.org/api/crypto.html#crypto_crypto_randombytes_size_callback), because generating true random bits takes time, and can block execution.  Instead, it uses things like high-resolution time, a pseudo-random number, a static counter, the server hostname, the current process PID, etc.
 
 ## generateUniqueBase64
 
@@ -160,7 +158,7 @@ Please note that this is *not* designed to be cryptographically secure.  It does
 STRING generateUniqueBase64( BYTES, SALT )
 ```
 
-This function generates a pseudo-random URL-safe Base64 ID string by combining various bits of local entropy, and hashing it together with [SHA-256](http://en.wikipedia.org/wiki/SHA-2).  The default digest length is 32 bytes (which results in a ~43 character Base64 string), but you can pass in any lesser byte length to chop it (e.g. 16 or 8).  If you want to add your own entropy, pass it as the 2nd argument.
+This function generates a cryptographically secure URL-safe Base64 ID string.  It is *extremely* fast, as it uses a local 32K cache and only calls [crypto.randomBytes](https://nodejs.org/api/crypto.html#cryptorandombytessize-callback) to refill it.  The default length is 32 bytes (which results in a ~43 character Base64 string), but you can pass in any lesser byte length to chop it (e.g. 16 or 8).
 
 ```js
 let id = Tools.generateUniqueBase64();
@@ -169,31 +167,33 @@ let id = Tools.generateUniqueBase64();
 let id = Tools.generateUniqueBase64( 16 );
 // Example: "jNEHRduwVcqcijGVAKVZQg"
 
-let id = Tools.generateUniqueBase64( 8, "my extra entropy!" );
+let id = Tools.generateUniqueBase64( 8 );
 // Example: "YrIjBy5x_sU"
 ```
-
-Please note that this is *not* designed to be cryptographically secure.  It doesn't use Node's [crypto.randomBytes](https://nodejs.org/api/crypto.html#cryptorandombytessize-callback), because generating true random bits takes time, and can block execution.  Instead, it uses things like high-resolution time, a pseudo-random number, a static counter, the server hostname, the current process PID, etc.
 
 ## generateShortID
 
 ```
-STRING generateShortID( PREFIX, LENGTH )
+STRING generateShortID( PREFIX )
 ```
 
-This function generates a short, semi-unique pseudo-random alphanumeric ID using high-resolution server time, and a static counter.  Both values are converted to [Base-36](https://en.wikipedia.org/wiki/Base36) (lower-case alphanumeric encoding), and combined to produce a 10 character ID, plus an optional string prefix if provided.  This algorithm allows for *up to* 1,296 unique IDs per millisecond, but due to server clock adjustments (NTP) this could theoretically collide with itself.  Use with caution.  Example:
+This function generates a short, semi-unique pseudo-random sortable alphanumeric ID using high-resolution server time, a static counter, and crypto random bytes.  It is *extremely* fast, as it uses a local 32K cache and only calls [crypto.randomBytes](https://nodejs.org/api/crypto.html#cryptorandombytessize-callback) to refill it.  The IDs are [Base-36](https://en.wikipedia.org/wiki/Base36) encoded (lower-case alphanumeric), and 16 characters in length (including an optional string prefix if provided).  Example:
 
 ```js
 let id = Tools.generateShortID('z');
-// Example: "zjcdtsls30r"
+// Example: "zmfopulv7m5o4dz6"
 ```
 
-This function also accepts an optional length argument, which, if specified and greater than 10, will produce additional crypto-random Base36 characters as a suffix.  Using this you can produce a 4-part composite ID: A fixed prefix (custom length), a time-based portion (8 characters), a static looping counter (2 characters), and a cryptographic suffix (custom length).  This produces a nice, database-friendly "sortable" ID, as long as the prefix and length are always specified the same.  Example at 16 characters:
+The IDs are constructed from the following parts:
 
-```js
-let id = Tools.generateShortID('j', 16);
-// Example: "jmfopulv7m5o4dz6"
-```
+- A user-provided prefix string (optional, custom length)
+- The Unix clock time in milliseconds, converted to Base-36 (+8 characters)
+- A static global counter, also in Base-36, which counts up to 1,296 (`zz`) then resets (+2 characters)
+- Crypto random bytes in Base-36 (enough to fill out the ID to 16 characters total)
+
+Use these with caution, as collisions *can* happen when many IDs are generated in sequence at an **extremely** high rate.  However, in practice this will be very, very rare indeed.  In order to produce a collision, the following has to occur: More than 1,296 IDs have to be generated within the same server clock millisecond (which flips the static counter back to zero), **and** the crypto random portion of the ID (usually around 5 - 6 characters) have to collide with the ID with the matching static counter value from the previous loop.
+
+**Note:** Unix clock time in Base-36 will rollover from 8 to 9 characters in the year 2059 A.D.  When this happens, the short IDs will still be 16 characters total (it compensates), but the time portion will take up 1 extra character, which will cause a "resort" if you are relying on these being alphabetically sortable.  However, this library will likely be obsolete by then (and I'll probably be dead), so I don't care.  No, I don't want to add a padding character.
 
 ## digestHex
 
