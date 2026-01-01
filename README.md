@@ -1520,6 +1520,20 @@ var haystack = ['red', 'green', 'yellow', 'blue', 'purple', 'black'];
 var matched = Tools.includesAny(haystack, ['red', 'white', 'blue']); // true
 ```
 
+## includesAll
+
+```
+BOOLEAN includesAll( HAYSTACK, NEEDLES )
+```
+
+Returns true if `haystack` contains all `needles` (in any order), false otherwise.  Both arguments must be arrays.  This is similar to [Array.includes]() except that it searches the first array (haystack) for **all** matches in the second array (needles).  Example use:
+
+```js
+var haystack = ['red', 'green', 'yellow', 'blue', 'purple', 'black'];
+var matched = Tools.includesAll(haystack, ['red', 'white', 'blue']); // false
+var matched = Tools.includesAll(haystack, [ 'black', 'purple', 'blue', 'yellow', 'green', 'red' ]); // true
+```
+
 ## stripANSI
 
 ```
