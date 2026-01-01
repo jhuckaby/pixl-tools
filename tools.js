@@ -64,6 +64,8 @@ const MATCH_ANSI = (function() {
 	return new RegExp(pattern, 'g');
 })();
 
+const INTL_NUM_FMT = new Intl.NumberFormat();
+
 module.exports = {
 	
 	"async": require('async'),
@@ -696,22 +698,8 @@ module.exports = {
 	},
 	
 	commify: function(number) {
-		// add US-formatted commas to integer, like 1,234,567
-		if (!number) number = 0;
-		number = '' + number;
-		
-		if (number.length > 3) {
-			var mod = number.length % 3;
-			var output = (mod > 0 ? (number.substring(0,mod)) : '');
-			for (var i=0 ; i < Math.floor(number.length / 3); i++) {
-				if ((mod == 0) && (i == 0))
-					output += number.substring(mod+ 3 * i, mod + 3 * i + 3);
-				else
-					output+= ',' + number.substring(mod + 3 * i, mod + 3 * i + 3);
-			}
-			return (output);
-		}
-		else return number;
+		// add international formatting to integer, like 1,234,567 in the US
+		return INTL_NUM_FMT.format(number || 0);
 	},
 	
 	shortFloat: function(value, places) {
