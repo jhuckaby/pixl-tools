@@ -845,15 +845,13 @@ let bytes = Tools.getBytesFromText( "1.525 MB" ); // 1599078
 STRING commify( INTEGER )
 ```
 
-This function adds commas to long numbers following US-style formatting rules (add comma every 3 digits counting from right side).  Only positive integers are supported.
+This function adds international symbols to long numbers following the current server locale formatting rules (for e.g. in the US this will add comma every 3 digits counting from right side).
 
 ```js
 let c = Tools.commify( 123 ); // "123"
 let c = Tools.commify( 1234 ); // "1,234"
 let c = Tools.commify( 1234567890 ); // "1,234,567,890"
 ```
-
-**Note:** This is a legacy function, included for compatiblity purposes.  Nowadays you should be using [Intl.NumberFormat](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl/NumberFormat) instead.
 
 ## shortFloat
 
