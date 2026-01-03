@@ -78,6 +78,7 @@
 	* [findBinSync](#findbinsync)
 	* [sortBy](#sortby)
 	* [includesAny](#includesany)
+	* [includesAll](#includesall)
 	* [stripANSI](#stripansi)
 	* [noop](#noop)
 - [Misc](#misc)
