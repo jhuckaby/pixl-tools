@@ -21,7 +21,7 @@
   "dependencies": {
     "errno": "0.1.7",
     "async": "2.6.4",
-	"picomatch": "4.0.3"
+	"picomatch": "4.0.4"
   },
   "devDependencies": {}
 }
