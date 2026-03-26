@@ -1453,6 +1453,41 @@ module.exports = {
 	stripANSI: function(str) {
 		// strip ansi characters from a string
 		return str.replace(MATCH_ANSI, '');
+	},
+	
+	toTitleCase(str) {
+		// capitalize each word
+		return String(str).toLowerCase().replace(/\b\w/g, function (txt) { return txt.toUpperCase(); });
+	},
+	
+	stableStringify: function(node) {
+		// deep-serialize JSON with sorted keys, for comparison purposes
+		var self = this;
+		if (node === null) return 'null';
+		if (this.isaHash(node)) {
+			var json = '{';
+			Object.keys(node).sort().forEach( function(key, idx) {
+				if (idx) json += ',';
+				json += JSON.stringify(key) + ":" + self.stableStringify(node[key]);
+			} );
+			json += '}';
+			return json;
+		}
+		else if (this.isaArray(node)) {
+			var json = '[';
+			node.forEach( function(item, idx) {
+				if (idx) json += ',';
+				json += self.stableStringify(item);
+			} );
+			json += ']';
+			return json;
+		}
+		else return JSON.stringify(node);
+	},
+	
+	stablePrettyStringify: function(node) {
+		// generate stable (alphabetized keys) pretty-printed json
+		return JSON.stringify( JSON.parse( this.stableStringify(node) ), null, "\t" );
 	}
 	
 }; // module.exports
