@@ -653,20 +653,21 @@ module.exports = {
 		return this.getTimeFromArgs(args);
 	},
 	
-	getTextFromBytes: function(bytes, precision) {
+	getTextFromBytes: function(bytes, precision, unit) {
 		// convert raw bytes to english-readable format
 		// set precision to 1 for ints, 10 for 1 decimal point (default), 100 for 2, etc.
 		bytes = Math.floor(bytes);
 		if (!precision) precision = 10;
+		if (!unit) unit = 1024;
 		
-		if (bytes >= 1024) {
-			bytes = Math.floor( (bytes / 1024) * precision ) / precision;
-			if (bytes >= 1024) {
-				bytes = Math.floor( (bytes / 1024) * precision ) / precision;
-				if (bytes >= 1024) {
-					bytes = Math.floor( (bytes / 1024) * precision ) / precision;
-					if (bytes >= 1024) {
-						bytes = Math.floor( (bytes / 1024) * precision ) / precision;
+		if (bytes >= unit) {
+			bytes = Math.floor( (bytes / unit) * precision ) / precision;
+			if (bytes >= unit) {
+				bytes = Math.floor( (bytes / unit) * precision ) / precision;
+				if (bytes >= unit) {
+					bytes = Math.floor( (bytes / unit) * precision ) / precision;
+					if (bytes >= unit) {
+						bytes = Math.floor( (bytes / unit) * precision ) / precision;
 						return bytes + ' TB';
 					} 
 					else return bytes + ' GB';
@@ -678,15 +679,16 @@ module.exports = {
 		else return bytes + this.pluralize(' byte', bytes);
 	},
 	
-	getBytesFromText: function(text) {
-		// parse text into raw bytes, e.g. "1 K" --> 1024
+	getBytesFromText: function(text, unit) {
+		// parse text into raw bytes, e.g. "1 K" --> 1024 (or custom)
 		if (text.toString().match(/^\d+$/)) return parseInt(text); // already in bytes
+		if (!unit) unit = 1024;
 		var multipliers = {
 			b: 1,
-			k: 1024,
-			m: 1024 * 1024,
-			g: 1024 * 1024 * 1024,
-			t: 1024 * 1024 * 1024 * 1024
+			k: unit,
+			m: unit * unit,
+			g: unit * unit * unit,
+			t: unit * unit * unit * unit
 		};
 		var bytes = 0;
 		text = text.toString().replace(/([\d\.]+)\s*(\w)\w*\s*/g, function(m_all, m_g1, m_g2) {

@@ -807,7 +807,7 @@ let str = Tools.formatDate( now, "[hour12]:[mi] [ampm]" );
 ## getTextFromBytes
 
 ```
-STRING getTextFromBytes( BYTES, PRECISION )
+STRING getTextFromBytes( BYTES, PRECISION = 10, UNIT = 1024 )
 ```
 
 This function generates a human-friendly text string given a number of bytes.  It reduces the units to K, MB, GB or TB as needed, and allows a configurable amount of precision after the decimal point.  The default is one decimal of precision (specify as `1`, `10`, `100`, etc.).
@@ -824,10 +824,16 @@ let str = Tools.getTextFromBytes( 1599078, 100 ); // "1.52 MB"
 let str = Tools.getTextFromBytes( 1599078, 1000 ); // "1.525 MB"
 ```
 
+Note that by default, the "unit" is set to 1,024, meaning it considers 1,024 bytes to be 1K, 1,048,576 bytes to be 1MB, and so on.  These are known as "binary units".  However, if you would like the output to be in "decimal units" instead, set the unit to `1000`.  Example:
+
+```js
+let str = Tools.getTextFromBytes( 500000, 10, 1000 ); // "500 K"
+```
+
 ## getBytesFromText
 
 ```
-INTEGER getBytesFromText( STRING )
+INTEGER getBytesFromText( STRING, UNIT = 1024 )
 ```
 
 This function parses a string containing a human-friendly size count (e.g. `45 bytes` or `1.5 MB`) and converts it to raw bytes.
@@ -838,6 +844,12 @@ let bytes = Tools.getBytesFromText( "1023 bytes" ); // 1023
 let bytes = Tools.getBytesFromText( "1 K" ); // 1024
 let bytes = Tools.getBytesFromText( "1.1k" ); // 1126
 let bytes = Tools.getBytesFromText( "1.525 MB" ); // 1599078	
+```
+
+Note that by default, the "unit" is set to 1,024, meaning it treats 1KB as exactly 1,024 bytes, 1MB as exactly 1,024KB, and so on.  These are known as "binary units".  However, if your text is in "decimal units" instead, set the unit to `1000`.  Example:
+
+```js
+let bytes = Tools.getBytesFromText( "1MB", 1000 ); // 1000000
 ```
 
 ## commify
