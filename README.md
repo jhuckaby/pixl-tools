@@ -19,8 +19,10 @@
 	* [copyHash](#copyhash)
 	* [copyHashRemoveKeys](#copyhashremovekeys)
 	* [copyHashRemoveProto](#copyhashremoveproto)
+	* [copyDeepHashLowerKeys](#copydeephashlowerkeys)
 	* [mergeHashes](#mergehashes)
 	* [mergeHashInto](#mergehashinto)
+	* [mergeUpdatesInto](#mergeupdatesinto)
 	* [parseQueryString](#parsequerystring)
 	* [composeQueryString](#composequerystring)
 	* [findObjectsIdx](#findobjectsidx)
@@ -39,6 +41,7 @@
 	* [getDateArgs](#getdateargs)
 	* [getTimeFromArgs](#gettimefromargs)
 	* [normalizeTime](#normalizetime)
+	* [parseDate](#parsedate)
 	* [formatDate](#formatdate)
 	* [getTextFromBytes](#gettextfrombytes)
 	* [getBytesFromText](#getbytesfromtext)
@@ -51,6 +54,7 @@
 	* [getTextFromSeconds](#gettextfromseconds)
 	* [getSecondsFromText](#getsecondsfromtext)
 	* [getNiceRemainingTime](#getniceremainingtime)
+	* [probably](#probably)
 	* [randArray](#randarray)
 	* [pluralize](#pluralize)
 	* [escapeRegExp](#escaperegexp)
@@ -371,6 +375,29 @@ let my_hash = { foo: "bar", baz: 12345 };
 let clean_copy = Tools.copyHashRemoveProto( my_hash );
 ```
 
+## copyDeepHashLowerKeys
+
+```
+MIXED copyDeepHashLowerKeys( MIXED )
+```
+
+This function recursively copies a tree of hashes and arrays, converting all hash keys to lowercase along the way.  Primitive values are copied as-is.  Keys matching [MATCH_BAD_KEY](#match_bad_key) are omitted from the result for safety.
+
+```js
+let source = {
+	Name: "Widget",
+	Options: {
+		ENABLED: true,
+		Colors: ["Red", "Green", "Blue"]
+	}
+};
+
+let copy = Tools.copyDeepHashLowerKeys( source );
+// { name: "Widget", options: { enabled: true, colors: ["Red", "Green", "Blue"] } }
+```
+
+The returned hashes and arrays are new objects, so changes to them will not affect the source tree.  If a hash contains multiple keys that differ only by letter case, the last key encountered takes precedence.
+
 ## mergeHashes
 
 ```
@@ -398,6 +425,42 @@ let hash1 = { foo: "bar" };
 let hash2 = { baz: 12345 };
 Tools.mergeHashInto( hash1, hash2 );
 ```
+
+## mergeUpdatesInto
+
+```
+VOID mergeUpdatesInto( OBJECT, UPDATES )
+```
+
+This function applies a hash of updates to an object in place.  Each update key may contain a dot-notated or slash-delimited path, allowing values deep inside the object to be updated without replacing their parent hashes.  Missing intermediate hashes are created automatically.
+
+```js
+let config = {
+	server: {
+		hostname: "localhost",
+		port: 80
+	},
+	debug: false
+};
+
+Tools.mergeUpdatesInto( config, {
+	"server.port": 8080,
+	"server.ssl.enabled": true,
+	"debug": true
+} );
+
+// config is now:
+// {
+// 	server: {
+// 		hostname: "localhost",
+// 		port: 8080,
+// 		ssl: { enabled: true }
+// 	},
+// 	debug: true
+// }
+```
+
+Paths follow the same rules as [setPath()](#setpath), including support for backslash-escaped dots and slashes.  An update is skipped if its path runs through a non-object value or contains a key matching [MATCH_BAD_KEY](#match_bad_key).  There is no return value.
 
 ## parseQueryString
 
@@ -783,6 +846,24 @@ You can actually set the values to non-zero.  For example, to return the Epoch t
 let noon = Tools.normalizeTime( Tools.timeNow(), { hour: 12, min: 0, sec: 0 } );
 ```
 
+## parseDate
+
+```
+INTEGER parseDate( STRING )
+```
+
+This function parses a date or date/time string and returns the result as integer Epoch seconds.  It returns `0` if the string cannot be parsed.
+
+```js
+let epoch = Tools.parseDate( "2026-09-02" );
+// Local midnight on September 2, 2026
+
+let epoch = Tools.parseDate( "2026-09-02 12:34:56" );
+// Local time at 12:34:56 PM on September 2, 2026
+```
+
+Plain dates in `YYYY-MM-DD`, `MM-DD-YYYY`, `YYYY/MM/DD` and `MM/DD/YYYY` formats are interpreted as local midnight.  Other strings follow the parsing rules of the built-in JavaScript `Date` object.
+
 ## formatDate
 
 ```
@@ -997,6 +1078,22 @@ let remain = Tools.getNiceRemainingTime( 3640, 0.75, 1.0, true, true );
 ```
 
 Note that this works best when the job's progress is somewhat constant.  If it proceeds at a varying pace, the remaining time may appear to go too fast or too slow at times.  It always computes the average speed over the course of the time elapsed, versus the current progress.
+
+## probably
+
+```
+BOOLEAN probably( NUMBER )
+```
+
+This function randomly returns `true` or `false` using the supplied probability, expressed as a number from `0.0` to `1.0`.  For example, `0.25` gives a 25% chance of returning `true`.
+
+```js
+if (Tools.probably( 0.25 )) {
+	console.log("This happens about one quarter of the time.");
+}
+```
+
+An amount of `0` always returns `false`, while an amount of `1` always returns `true`.  This function uses `Math.random()` and is not intended for cryptographic or security-sensitive decisions.
 
 ## randArray
 

@@ -247,6 +247,27 @@ module.exports = {
 		return output;
 	},
 	
+	copyDeepHashLowerKeys(obj) {
+		// copy object tree to lowercase keys, recursively
+		var result = obj;
+		
+		if (this.isaHash(obj)) {
+			result = {};
+			for (var key in obj) {
+				var new_key = key.toLowerCase();
+				if (!new_key.match(this.MATCH_BAD_KEY)) result[ new_key ] = this.copyDeepHashLowerKeys( obj[key] );
+			}
+		}
+		else if (this.isaArray(obj)) {
+			result = [];
+			for (var idx = 0, len = obj.length; idx < len; idx++) {
+				result.push( this.copyDeepHashLowerKeys( obj[idx] ) );
+			}
+		}
+		
+		return result;
+	},
+	
 	mergeHashes: function(a, b) {
 		// shallow-merge keys from a and b into c and return c
 		// b has precedence over a
@@ -263,6 +284,13 @@ module.exports = {
 	mergeHashInto: function(a, b) {
 		// shallow-merge keys from b into a
 		for (var key in b) a[key] = b[key];
+	},
+	
+	mergeUpdatesInto: function(obj, updates) {
+		// allow updates to contain dot.path.notated keys and values to merge into obj
+		for (var path in updates) {
+			this.setPath(obj, path, updates[path]);
+		}
 	},
 	
 	parseQueryString: function(url) {
@@ -493,11 +521,16 @@ module.exports = {
 		} ) : path.split(/[\.\/]/);
 		
 		var key = parts.pop();
+		if (key.match(this.MATCH_BAD_KEY)) return false;
 		
 		// traverse path
 		while (parts.length) {
 			var part = parts.shift();
 			if (part) {
+				if (part.match(this.MATCH_BAD_KEY)) {
+					// do not traverse into any bad keys
+					return false;
+				}
 				if (!(part in target)) {
 					// auto-create nodes
 					target[part] = {};
@@ -565,6 +598,14 @@ module.exports = {
 		}
 		
 		return target[key];
+	},
+	
+	parseDate: function(str) {
+		// parse date/time into epoch, local timezone
+		// if string is plain date in common formats, add midnight to avoid js UTC parsing quirk
+		// returns 0 on failure
+		if (str.match(/^(\d{4}-\d{2}-\d{2}|\d{2}-\d{2}-\d{4}|\d{4}\/\d{2}\/\d{2}|\d{2}\/\d{2}\/\d{4})$/)) str += ' 00:00:00';
+		return Math.floor( ((new Date(str)).getTime() / 1000) ) || 0;
 	},
 	
 	formatDate: function(thingy, template) {
@@ -811,6 +852,11 @@ module.exports = {
 		var sec_remain = Math.floor(((counter_max - counter) * elapsed) / counter);
 		
 		return this.getTextFromSeconds( sec_remain, abbrev, shorten );
+	},
+	
+	probably: function(amount) {
+		// return true or false depending on supplied odds (0.0 to 1.0)
+		return Math.random() < amount;
 	},
 	
 	randArray: function(arr) {
