@@ -80,7 +80,7 @@ module.exports = {
 	
 	NEVER_MATCH: /(?!)/,
 	MATCH_ANSI: MATCH_ANSI,
-	MATCH_BAD_KEY: /^(constructor|__defineGetter__|__defineSetter__|hasOwnProperty|__lookupGetter__|__lookupSetter__|isPrototypeOf|propertyIsEnumerable|toString|valueOf|__proto__|toLocaleString|0)$/,
+	MATCH_BAD_KEY: /^(constructor|__defineGetter__|__defineSetter__|hasOwnProperty|__lookupGetter__|__lookupSetter__|isPrototypeOf|propertyIsEnumerable|toString|valueOf|__proto__|toLocaleString)$/,
 	
 	isWindows: !!process.platform.match(/^win/),
 	isLinux: !!process.platform.match(/^linux/),
