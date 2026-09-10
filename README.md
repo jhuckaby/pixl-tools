@@ -1621,7 +1621,7 @@ let sorted = Tools.sortBy( list, "date", { type: "number", dir: 1, copy: true } 
 BOOLEAN includesAny( HAYSTACK, NEEDLES )
 ```
 
-Returns true if `haystack` contains any `needles`, false otherwise.  Both arguments must be arrays.  This is similar to [Array.includes]() except that it searches the first array (haystack) for **any** matches in the second array (needles).  Example use:
+Returns true if `haystack` contains any `needles`, false otherwise.  Both arguments must be arrays.  This is similar to [Array.includes](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/includes) except that it searches the first array (haystack) for **any** matches in the second array (needles).  Example use:
 
 ```js
 var haystack = ['red', 'green', 'yellow', 'blue', 'purple', 'black'];
@@ -1634,7 +1634,7 @@ var matched = Tools.includesAny(haystack, ['red', 'white', 'blue']); // true
 BOOLEAN includesAll( HAYSTACK, NEEDLES )
 ```
 
-Returns true if `haystack` contains all `needles` (in any order), false otherwise.  Both arguments must be arrays.  This is similar to [Array.includes]() except that it searches the first array (haystack) for **all** matches in the second array (needles).  Example use:
+Returns true if `haystack` contains all `needles` (in any order), false otherwise.  Both arguments must be arrays.  This is similar to [Array.includes](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/includes) except that it searches the first array (haystack) for **all** matches in the second array (needles).  Example use:
 
 ```js
 var haystack = ['red', 'green', 'yellow', 'blue', 'purple', 'black'];
