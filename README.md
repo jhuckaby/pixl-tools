@@ -103,6 +103,8 @@ This module contains a set of miscellaneous utility functions that don't fit int
 
 # Usage
 
+Requires Node.js v22.12.0 or newer.
+
 Use [npm](https://www.npmjs.com/) to install the module:
 
 ```sh

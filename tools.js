@@ -9,7 +9,6 @@ const crypto = require('crypto');
 const ErrNo = require('errno');
 const os = require('os');
 const hostname = os.hostname();
-const picomatch = require('picomatch');
 
 const MONTH_NAMES = [ 
 	'January', 'February', 'March', 'April', 'May', 'June', 
@@ -66,10 +65,21 @@ const MATCH_ANSI = (function() {
 
 const INTL_NUM_FMT = new Intl.NumberFormat();
 
+function getGlobInfo(filespec) {
+	// Normalize Windows separators and leading ./ to match paths returned by the walker.
+	if (process.platform == 'win32') filespec = filespec.replace(/\\/g, '/');
+	filespec = filespec.replace(/^(\.\/)+/, '');
+	
+	// Start at the directory before the first glob character (or the literal file's parent).
+	var idx = filespec.search(/[*?\[\]{}()]/);
+	var dir = Path.dirname(idx < 0 ? filespec : filespec.slice(0, idx) + '_');
+	var recurse = (idx >= 0) && /(\*\*|\/)/.test(filespec.slice(idx));
+	return { filespec, dir, recurse };
+}
+
 module.exports = {
 	
 	"async": require('async'),
-	picomatch: picomatch,
 	
 	hostname: hostname,
 	user_cache: {},
@@ -1273,41 +1283,21 @@ module.exports = {
 	},
 	
 	glob: function(filespec, opts, callback) {
-		// find files using glob pattern
-		if (!callback) { callback = opts; opts = {}; }
-		if (!opts) opts = {};
-		if (this.isWindows) {
-			opts.windows = true; // allow backslash dir seps
-			filespec = filespec.replace(/\\/g, '/'); // convert backs to fronts in pattern
-		}
+		// Find files using Node's glob matcher.  The legacy opts argument is ignored.
+		if (!callback) callback = opts;
+		var info = getGlobInfo(filespec);
 		
-		var pmatch = picomatch(filespec, opts);
-		var pinfo = picomatch.scan(filespec);
-		var dir = pinfo.base || '.';
-		if (dir === filespec) dir = Path.dirname(dir);
-		var recurse = !!pinfo.glob.match(/(\*\*|\/)/);
-		
-		this.findFiles( dir, { recurse, dirs: true }, function(err, files) {
+		this.findFiles( info.dir, { recurse: info.recurse, dirs: true }, function(err, files) {
 			if (err) return callback(err);
-			callback(null, files.filter( function(file) { return pmatch(file); } ));
+			callback(null, files.filter( function(file) { return Path.matchesGlob(file, info.filespec); } ));
 		}); // findFiles
 	},
 	
 	globSync: function(filespec, opts) {
-		// find files using glob pattern, sync
-		if (!opts) opts = {};
-		if (this.isWindows) {
-			opts.windows = true; // allow backslash dir seps
-			filespec = filespec.replace(/\\/g, '/'); // convert backs to fronts in pattern
-		}
-		
-		var pmatch = picomatch(filespec, opts);
-		var pinfo = picomatch.scan(filespec);
-		var dir = pinfo.base || '.';
-		if (dir === filespec) dir = Path.dirname(dir);
-		var recurse = !!pinfo.glob.match(/(\*\*|\/)/);
-		var files = this.findFilesSync( dir, { recurse, dirs: true } );
-		return files.filter( function(file) { return pmatch(file); } );
+		// Find files using Node's glob matcher, sync.  The legacy opts argument is ignored.
+		var info = getGlobInfo(filespec);
+		var files = this.findFilesSync( info.dir, { recurse: info.recurse, dirs: true } );
+		return files.filter( function(file) { return Path.matchesGlob(file, info.filespec); } );
 	},
 	
 	rimraf: function(filespec, opts, callback) {
