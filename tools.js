@@ -80,6 +80,7 @@ function getGlobInfo(filespec) {
 module.exports = {
 	
 	"async": require('async'),
+	"sjson": require('secure-json-parse'),
 	
 	hostname: hostname,
 	user_cache: {},

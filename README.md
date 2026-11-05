@@ -1670,10 +1670,18 @@ Here are a few non-functions available in the `Tools` object.
 
 ## async
 
-This is a reference to the extremely awesome [async](https://npmjs.com/package/async) package from NPM.  I use this so frequently that I decided to include in tools.  Access it like this:
+This is a reference to the [async](https://npmjs.com/package/async) package from NPM.  Access it like this:
 
 ```js
 const async = Tools.async;
+```
+
+## sjson
+
+This is a reference to the [secure-json-parse](https://npmjs.com/package/secure-json-parse) package from NPM.  Access it like this:
+
+```js
+const sjson = Tools.sjson;
 ```
 
 ## isLinux
