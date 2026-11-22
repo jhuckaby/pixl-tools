@@ -334,7 +334,7 @@ module.exports = {
 		for (var idx = 0, len = arr.length; idx < len; idx++) {
 			var matches = 0;
 			for (var key in crit) {
-				if (arr[idx][key] == crit[key]) matches++;
+				if (arr[idx] && (arr[idx][key] == crit[key])) matches++;
 			}
 			if (matches == num_crit) {
 				idxs.push(idx);
@@ -376,7 +376,7 @@ module.exports = {
 		for (var idx = 0, len = arr.length; idx < len; idx++) {
 			var matches = 0;
 			for (var key in crit) {
-				if (this.getPath(arr[idx], key) == crit[key]) matches++;
+				if (arr[idx] && (this.getPath(arr[idx], key) == crit[key])) matches++;
 			}
 			if (matches == num_crit) {
 				results.push(arr[idx]);
