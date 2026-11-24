@@ -214,14 +214,14 @@ module.exports = {
 		return arr;
 	},
 	
-	isaHash: function(arg) {
+	isaHash: function(value) {
 		// determine if arg is a hash or hash-like
-		return( !!arg && (typeof(arg) == 'object') && (typeof(arg.length) == 'undefined') );
+		return( !!value && (typeof(value) == 'object') && !Array.isArray(value) );
 	},
 	
-	isaArray: function(arg) {
+	isaArray: function(value) {
 		// determine if arg is an array or is array-like
-		return( !!arg && (typeof(arg) == 'object') && (typeof(arg.length) != 'undefined') );
+		return( !!value && (typeof(value) == 'object') && (typeof(value.length) != 'undefined') );
 	},
 	
 	copyHash: function(hash, deep) {
